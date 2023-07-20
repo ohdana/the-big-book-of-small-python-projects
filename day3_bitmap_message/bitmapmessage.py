@@ -1,22 +1,21 @@
 def main():
     init()
     show_intro_message()
-    get_word()
-    show_bitmap()
+    word = get_word()
+    show_bitmap(word)
 
 def init():
     init_strings_dictionary()
 
 def get_word():
-    global WORD
-    WORD = input(STRINGS_DICTIONARY.enter_the_message)
+    return input(STRINGS_DICTIONARY.enter_the_message)
 
-def show_bitmap():
+def show_bitmap(word):
     original_bitmap = STRINGS_DICTIONARY.bitmap
     custom_bitmap = ''
     for i in range(len(original_bitmap)):
         if original_bitmap[i] in ['.', '*']:
-            custom_bitmap += WORD[i % len(WORD)]
+            custom_bitmap += word[i % len(word)]
             continue
 
         custom_bitmap += original_bitmap[i]
