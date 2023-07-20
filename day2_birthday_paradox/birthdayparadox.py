@@ -3,55 +3,63 @@ from random import choices
 
 MAX_BDAYS = 100
 N_OF_SIMULATIONS = 1000
-N_OF_BIRTHDAYS = 0
-N_OF_POSITIVE_CASES = 0
 CALENDAR = []
 
 def main():
     init()
     show_intro_message()
-    set_n_of_bdays()
-    show_example()
-    show_simulation_progress()
-    show_simulation_result()
+    n_of_bdays = get_n_of_bdays()
+    show_simulation_example(n_of_bdays)
+    run_all_simulations(n_of_bdays)
 
-def show_intro_message():
-    print(STRINGS_DICTIONARY.intro_message)
+def show_simulation_example(n_of_bdays):
+    matches = []
 
-def set_n_of_bdays():
-    global N_OF_BIRTHDAYS
-    N_OF_BIRTHDAYS = int(get_n_of_birthdays())
+    while not matches:
+        random_bdays = generate_bdays(n_of_bdays)
+        matches = get_bday_matches(random_bdays)
 
-def show_example():
-    birthdays = generate_birthdays(N_OF_BIRTHDAYS)
-    print(STRINGS_DICTIONARY.show_bdays_message)
-    print(birthdays)
-    matches = get_bday_matches(birthdays)
+    print(STRINGS_DICTIONARY.show_bdays_message.format(n_of_bdays))
+    print(random_bdays)
+
     matches_string = ', '.join(matches)
     print(STRINGS_DICTIONARY.multiple_bdays_message.format(matches_string))
 
-def show_simulation_progress():
-    print(STRINGS_DICTIONARY.generate_bdays_message)
-    input(STRINGS_DICTIONARY.press_enter)
-    run_simulations()
+def run_all_simulations(n_of_bdays):
+    show_simulation_progress(n_of_bdays)
 
-def show_simulation_result():
-    print(STRINGS_DICTIONARY.result_message)
-
-def run_simulations():
-    global N_OF_POSITIVE_CASES
-    n_of_positive_cases = 0
-    for i in range(N_OF_SIMULATIONS+1):
+    n_of_positive_outcomes = 0
+    for i in range(N_OF_SIMULATIONS + 1):
         print(STRINGS_DICTIONARY.n_simulations_run_message.format(i))
-        birthdays = generate_birthdays(N_OF_BIRTHDAYS)
-        matches = get_bday_matches(birthdays)
+        random_bdays = generate_bdays(n_of_bdays)
+        matches = get_bday_matches(random_bdays)
         if not matches:
             continue
-        n_of_positive_cases += 1
-    N_OF_POSITIVE_CASES = n_of_positive_cases
+        n_of_positive_outcomes += 1
 
-def get_bday_matches(birthdays):
-    return set([x for x in birthdays if birthdays.count(x) > 1])
+    show_simulation_result(n_of_bdays, n_of_positive_outcomes)
+
+def show_simulation_progress(n_of_bdays):
+    print(STRINGS_DICTIONARY.generate_bdays_message.format(n_of_bdays, N_OF_SIMULATIONS))
+    input(STRINGS_DICTIONARY.press_enter)
+
+def show_simulation_result(n_of_bdays, n_of_positive_outcomes):
+    percent_of_positive_outcomes = n_of_positive_outcomes * 100 / N_OF_SIMULATIONS
+    print(STRINGS_DICTIONARY.result_message.format(a=N_OF_SIMULATIONS, b=n_of_bdays, c=n_of_positive_outcomes, d=percent_of_positive_outcomes))
+
+def get_n_of_bdays():
+    n_of_bdays = input(STRINGS_DICTIONARY.how_many_bdays_question)
+
+    while not is_valid_n_of_bdays(n_of_bdays):
+        n_of_bdays = input(STRINGS_DICTIONARY.invalid_n_of_bdays)
+
+    return int(n_of_bdays)
+
+def get_bday_matches(bdays):
+    return set([day for day in bdays if bdays.count(day) > 1])
+
+def generate_bdays(n):
+    return choices(CALENDAR, k=n)
 
 def is_valid_n_of_bdays(user_input):
     if not user_input.isdigit():
@@ -59,16 +67,8 @@ def is_valid_n_of_bdays(user_input):
 
     return 1 <= int(user_input) <= MAX_BDAYS
 
-def get_n_of_birthdays():
-    n_of_birthdays = input(STRINGS_DICTIONARY.how_many_bdays_question)
-
-    while not is_valid_n_of_bdays(n_of_birthdays):
-        n_of_birthdays = input(STRINGS_DICTIONARY.invalid_n_of_bdays)
-
-    return n_of_birthdays
-
-def generate_birthdays(n):
-    return choices(CALENDAR, k=n)
+def show_intro_message():
+    print(STRINGS_DICTIONARY.intro_message)
 
 def init():
     init_strings_dictionary()
@@ -106,7 +106,7 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.how_many_bdays_question = '''
     How many birthdays shall I generate? (Max {}): '''.format(MAX_BDAYS)
     STRINGS_DICTIONARY.show_bdays_message = '''
-    Here are {} birthdays:'''.format(N_OF_BIRTHDAYS)
+    Here are {} birthdays:'''
     STRINGS_DICTIONARY.invalid_n_of_bdays = '''
     Please enter a number between 1 and {}'''.format(MAX_BDAYS)
 
@@ -114,8 +114,7 @@ def init_strings_dictionary():
     In this simulation multiple people have their birthday on {}'''
 
     STRINGS_DICTIONARY.generate_bdays_message = '''
-    Generating {} random birthdays {} times...
-    '''.format(N_OF_BIRTHDAYS, N_OF_SIMULATIONS)
+    Generating {} random birthdays {} times...'''
 
     STRINGS_DICTIONARY.press_enter = '''
     Press Enter to begin...'''
@@ -123,12 +122,11 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.n_simulations_run_message = '''
     {} simulations run...'''
     STRINGS_DICTIONARY.result_message = '''
-    Out of {} simulations of {} people, there was a
-    matching birthday in that group {} times. This means
-    that {} people have a {}% chance of
+    Out of {a} simulations of {b} people, there was a
+    matching birthday in that group {c} times. This means
+    that {b} people have a {d}% chance of
     having a matching birthday in their group.
-    That's probably more than you would think!
-    '''.format(N_OF_SIMULATIONS, N_OF_BIRTHDAYS, N_OF_POSITIVE_CASES, N_OF_BIRTHDAYS, N_OF_POSITIVE_CASES * 100 / N_OF_SIMULATIONS)
+    That's probably more than you would think!'''
 
 class StringsDictionary:
     pass
