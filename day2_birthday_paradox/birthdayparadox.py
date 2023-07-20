@@ -45,7 +45,11 @@ def show_simulation_progress(n_of_bdays):
 
 def show_simulation_result(n_of_bdays, n_of_positive_outcomes):
     percent_of_positive_outcomes = n_of_positive_outcomes * 100 / N_OF_SIMULATIONS
-    print(STRINGS_DICTIONARY.result_message.format(a=N_OF_SIMULATIONS, b=n_of_bdays, c=n_of_positive_outcomes, d=percent_of_positive_outcomes))
+    print(STRINGS_DICTIONARY.result_message.format(
+        n_of_simulations=N_OF_SIMULATIONS,
+        n_of_bdays=n_of_bdays,
+        n_of_positive_outcomes=n_of_positive_outcomes,
+        percent_of_positive_outcomes=percent_of_positive_outcomes))
 
 def get_n_of_bdays():
     n_of_bdays = input(STRINGS_DICTIONARY.how_many_bdays_question)
@@ -122,9 +126,9 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.n_simulations_run_message = '''
     {} simulations run...'''
     STRINGS_DICTIONARY.result_message = '''
-    Out of {a} simulations of {b} people, there was a
-    matching birthday in that group {c} times. This means
-    that {b} people have a {d}% chance of
+    Out of {n_of_simulations} simulations of {n_of_bdays} people, there was a
+    matching birthday in that group {n_of_positive_outcomes} times. This means
+    that {n_of_bdays} people have a {percent_of_positive_outcomes}% chance of
     having a matching birthday in their group.
     That's probably more than you would think!'''
 
