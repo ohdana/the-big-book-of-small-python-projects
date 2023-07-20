@@ -14,7 +14,7 @@ def show_bitmap(word):
     original_bitmap = STRINGS_DICTIONARY.bitmap
     custom_bitmap = ''
     for i in range(len(original_bitmap)):
-        if original_bitmap[i] in ['.', '*']:
+        if original_bitmap[i] == '*':
             custom_bitmap += word[i % len(word)]
             continue
 
