@@ -1,5 +1,3 @@
-import pyperclip
-
 MIN_KEY = 0
 MAX_KEY = 25
 ABC='abcdefghijklmnopqrstuvwxyz'
@@ -7,7 +5,9 @@ ABC='abcdefghijklmnopqrstuvwxyz'
 def main():
     init()
     show_intro_message()
-    play()
+
+    while True:
+        play()
 
 def play():
     action = input(STRINGS_DICTIONARY.encrypt_or_decrypt)
@@ -16,11 +16,13 @@ def play():
         action = input(STRINGS_DICTIONARY.invalid_encrypt_or_decrypt)
 
     if action == 'e':
-        action_encrypt()
+        trigger_action_encrypt()
     elif action == 'd':
-        action_decrypt()
+        trigger_action_decrypt()
 
-def action_encrypt():
+    print(STRINGS_DICTIONARY.separator)
+
+def trigger_action_encrypt():
     user_message = input(STRINGS_DICTIONARY.enter_message_encrypt)
 
     key = input(STRINGS_DICTIONARY.enter_the_key)
@@ -28,11 +30,9 @@ def action_encrypt():
         key = input(STRINGS_DICTIONARY.enter_the_key)
 
     encrypted_message = encrypt(user_message.lower(), int(key))
-    print(encrypted_message)
-    copy_to_clipboard(encrypted_message)
-    print(STRINGS_DICTIONARY.encrypted_text_copied)
+    print(STRINGS_DICTIONARY.your_encrypted_message.format(encrypted_message))
 
-def action_decrypt():
+def trigger_action_decrypt():
     user_message = input(STRINGS_DICTIONARY.enter_message_decrypt)
 
     key = input(STRINGS_DICTIONARY.enter_the_key)
@@ -40,9 +40,7 @@ def action_decrypt():
 
     while not is_valid_key(key):
         key = input(STRINGS_DICTIONARY.enter_the_key)
-    print(decrypted_message)
-    copy_to_clipboard(decrypted_message)
-    print(STRINGS_DICTIONARY.decrypted_text_copied)
+    print(STRINGS_DICTIONARY.your_decrypted_message.format(decrypted_message))
 
 def is_valid_key(key):
     if not key.isdigit():
@@ -66,19 +64,13 @@ def get_shifted_char(char, key):
         return char
 
     char_ord_in_abc = ABC.index(char)
-
     new_char_ord_in_abc = char_ord_in_abc + key
     if new_char_ord_in_abc < 0:
         new_char_ord_in_abc = len(ABC) - new_char_ord_in_abc
     elif new_char_ord_in_abc > len(ABC):
-        new_char_ord_in_abc = new_char_ord_in_abc - len(ABC)
+        new_char_ord_in_abc -= len(ABC)
 
-    new_char = chr(new_char_ord_in_abc + ord('a'))
-
-    return new_char
-
-def copy_to_clipboard(message):
-    pyperclip.copy(message)
+    return chr(new_char_ord_in_abc + ord('a'))
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
@@ -109,12 +101,12 @@ def init_strings_dictionary():
     Please enter the message to decrypt: '''
     STRINGS_DICTIONARY.enter_message_encrypt = '''
     Please enter the message to encrypt: '''
-    STRINGS_DICTIONARY.encrypted_text_copied = '''
-    Fully encrypted text copied to the clipboard.'''
-    STRINGS_DICTIONARY.decrypted_text_copied = '''
-    Fully decrypted text copied to the clipboard.'''
-
-
+    STRINGS_DICTIONARY.your_encrypted_message = '''
+    Your encrypted message: {}'''
+    STRINGS_DICTIONARY.your_decrypted_message = '''
+    Your decrypted message: {}'''
+    STRINGS_DICTIONARY.separator = '''
+    ************************************************'''
 
 class StringsDictionary:
     pass
