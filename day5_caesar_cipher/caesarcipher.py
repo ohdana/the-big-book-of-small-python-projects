@@ -79,7 +79,6 @@ def get_shifted_char(char, key):
 
     char_ord_in_abc = ABC.index(char)
     new_char_ord_in_abc = char_ord_in_abc + key
-    print(new_char_ord_in_abc)
 
     if new_char_ord_in_abc < 0:
         new_char_ord_in_abc += len(ABC)
