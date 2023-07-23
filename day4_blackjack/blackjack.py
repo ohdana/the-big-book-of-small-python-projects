@@ -24,6 +24,7 @@ GAME_RESULT = None
 
 def main():
     init()
+    show_intro_message()
     while PLAY_AGAIN:
         play()
 
@@ -42,6 +43,9 @@ def show_results():
     if not GAME_RESULT:
         return
     print('\n', GAME_RESULT_MAP[GAME_RESULT])
+    player_won = GAME_RESULT == 1
+    if player_won:
+        print(STRINGS_DICTIONARY.you_won.format(BET))
 
 def init_new_game():
     reset_game()
@@ -119,6 +123,9 @@ def get_best_sum(sums):
     if len(sums) == 1:
         return sums[0]
 
+    if all(sum > 21 for sum in sums):
+        return sorted(sums)[0]
+
     return max([sum for sum in sums if sum <= 21])
 
 def draw_card():
@@ -178,8 +185,20 @@ def draw_initial_cards(hand):
     hand.append(draw_card())
 
 def show_hand(cards):
-    for card in cards:
-        print(card)
+    draw_cards(cards)
+
+def draw_cards(cards):
+    result = ''
+    card_images = [get_card_front(x[0], x[1]) for x in cards]
+    card_images_lines = [x.split('\n') for x in card_images]
+    n_of_lines = len(card_images_lines[0])
+    for line_number in range(n_of_lines):
+        line = ''
+        for card in card_images_lines:
+            line += card[line_number] + '  '
+        result += line + '\n'
+
+    print(result)
 
 def get_sums(cards):
     cards_without_aces = [card for card in cards if card[0] != 'A']
@@ -244,6 +263,7 @@ def quit():
     global GAME_OVER, PLAY_AGAIN
     GAME_OVER = True
     PLAY_AGAIN = False
+    print(STRINGS_DICTIONARY.your_final_total.format(PLAYER_BALANCE))
     print(STRINGS_DICTIONARY.goodbye_message)
 
 def get_bet():
@@ -317,7 +337,7 @@ def show_player_balance():
     print(STRINGS_DICTIONARY.money.format(PLAYER_BALANCE))
 
 def get_card_front(value, suit):
-    return CARDS_FRONT.format(value=value, suit=suit)
+    return STRINGS_DICTIONARY.card_front.format(value=value, suit=suit)
 
 def init():
     init_strings_dictionary()
@@ -364,20 +384,13 @@ def init_strings_dictionary():
         In case of a tie, the bet is returned to the player.
         The dealer stops hitting at 17.'''
 
-    STRINGS_DICTIONARY.card_back = '''
-     ---
-    |###|
-    |###|
-    |###|
-     ---
-    '''
-    STRINGS_DICTIONARY.card_front = '''
-     ___
-    |{value}  |
-    | {suit} |
-    |  {value}|
-     ---
-    '''
+    STRINGS_DICTIONARY.card_front = ' ___ \n|{value}  |\n| {suit} |\n|  {value}|\n --- '
+    STRINGS_DICTIONARY.card_front2 = '''
+ ___
+|{value}  |
+| {suit} |
+|  {value}|
+ --- '''
     STRINGS_DICTIONARY.money = '''
     Money: {}'''.format(PLAYER_BALANCE)
     STRINGS_DICTIONARY.bet = '''
@@ -406,6 +419,8 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.you_won = '''
     You won ${}!'''
 
+    STRINGS_DICTIONARY.your_final_total = '''
+    Your final balance is {}.'''
     STRINGS_DICTIONARY.goodbye_message = '''
     Bye!'''
     STRINGS_DICTIONARY.play_again = '''
