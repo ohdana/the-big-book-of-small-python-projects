@@ -8,6 +8,7 @@ MIN_CARD_VALUE = 2
 MAX_CARD_VALUE = 10
 DECK = []
 CARD_VALUE_MAP = {}
+GAME_RESULT_MAP = { 1: 'PLAYER WINS', 2: 'PLAYER LOST', 3: 'TIE' }
 
 PLAY_AGAIN = True
 INITIAL_PLAYER_BALANCE = 1000
@@ -19,6 +20,7 @@ PLAYER_CARDS = []
 DEALER_CARDS = []
 PLAYER_STOPPED = False
 DEALER_STOPPED = False
+GAME_RESULT = None
 
 def main():
     init()
@@ -33,25 +35,13 @@ def play():
         dealer_move()
 
     calculate_results()
+    show_results()
     prompt_play_again()
 
-def prompt_play_again():
-    play_again = input(STRINGS_DICTIONARY.play_again)
-
-    while not is_valid_play_again(play_again):
-        play_again = input(STRINGS_DICTIONARY.play_again)
-
-    if play_again == 'n':
-        quit()
-
-def is_valid_play_again(play_again):
-    if not play_again.isalpha():
-        return False
-
-    if not play_again in ['y', 'n']:
-        return False
-
-    return True
+def show_results():
+    if not GAME_RESULT:
+        return
+    print('\n', GAME_RESULT_MAP[GAME_RESULT])
 
 def init_new_game():
     reset_game()
@@ -59,13 +49,13 @@ def init_new_game():
     take_player_bet()
     draw_initial_cards(PLAYER_CARDS)
     draw_initial_cards(DEALER_CARDS)
+    stop_dealer_if_soft_17()
 
 def take_player_bet():
     global BET, PLAYER_BALANCE
-    bet = get_bet()
-    print(STRINGS_DICTIONARY.bet.format(bet))
-    BET += int(bet)
-    PLAYER_BALANCE -= int(bet)
+    bet_amount = get_bet()
+    print(STRINGS_DICTIONARY.bet.format(bet_amount))
+    bet(int(bet_amount))
 
 def player_move():
     move = get_player_move_input()
@@ -82,8 +72,9 @@ def player_move():
     if went_above_21:
         player_lost()
 
+    show_current_results()
+
 def dealer_move():
-    global DEALER_STOPPED
     if DEALER_STOPPED:
         return
 
@@ -91,14 +82,21 @@ def dealer_move():
     dealer_draws(card)
 
     sums = get_sums(DEALER_CARDS)
+    stop_dealer_if_soft_17(sums)
+    went_above_21 = all(sum > 21 for sum in sums)
+    if went_above_21:
+        player_won()
+
+    show_current_results()
+
+def stop_dealer_if_soft_17(sums=None):
+    global DEALER_STOPPED
+    if not sums:
+        sums = get_sums(DEALER_CARDS)
 
     reached_soft_17 = any(sum >= 17 for sum in sums)
     if reached_soft_17:
         DEALER_STOPPED = True
-
-    went_above_21 = all(sum > 21 for sum in sums)
-    if went_above_21:
-        player_won()
 
 def calculate_results():
     dealer_sums = get_sums(DEALER_CARDS)
@@ -112,9 +110,9 @@ def calculate_results():
 
     if player_best == dealer_best:
         tie()
-    elif player_best > dealer_best:
+    elif dealer_best < player_best <= 21:
         player_won()
-    else:
+    elif player_best < dealer_best <= 21:
         player_lost()
 
 def get_best_sum(sums):
@@ -132,6 +130,7 @@ def player_draws(card):
 
 def dealer_draws(card):
     DEALER_CARDS.append(card)
+    print(STRINGS_DICTIONARY.dealer_drew.format(card))
 
 def get_player_move_input():
     move = input(STRINGS_DICTIONARY.hit_stand_double).lower()
@@ -147,16 +146,21 @@ def stop_game():
     DEALER_STOPPED = True
 
 def tie():
+    global GAME_RESULT
+    GAME_RESULT = 3
     stop_game()
-    print('Tie.')
+    payout(BET)
 
 def player_won():
+    global GAME_RESULT
+    GAME_RESULT = 1
     stop_game()
-    print('Player wins!')
+    payout(BET * 2)
 
 def player_lost():
+    global GAME_RESULT
+    GAME_RESULT = 2
     stop_game()
-    print('Player lost!')
 
 def show_current_results():
     dealer_sum = get_sums(DEALER_CARDS)
@@ -166,6 +170,8 @@ def show_current_results():
     player_sum = get_sums(PLAYER_CARDS)
     print(STRINGS_DICTIONARY.player.format(get_sums_string(player_sum)))
     show_hand(PLAYER_CARDS)
+
+    print(STRINGS_DICTIONARY.separator)
 
 def draw_initial_cards(hand):
     hand.append(draw_card())
@@ -219,11 +225,19 @@ def stand():
 
 def double_down():
     global PLAYER_STOPPED
+
+    bet(BET)
     card = draw_card()
     player_draws(card)
     PLAYER_STOPPED = True
 
+def bet(amount):
+    global BET, PLAYER_BALANCE
+    BET += amount
+    PLAYER_BALANCE -= amount
+
 def payout(amount):
+    global PLAYER_BALANCE
     PLAYER_BALANCE += amount
 
 def quit():
@@ -247,6 +261,24 @@ def get_bet():
 
     return bet
 
+def prompt_play_again():
+    play_again = input(STRINGS_DICTIONARY.play_again)
+
+    while not is_valid_play_again(play_again):
+        play_again = input(STRINGS_DICTIONARY.play_again)
+
+    if play_again == 'n':
+        quit()
+
+def is_valid_play_again(play_again):
+    if not play_again.isalpha():
+        return False
+
+    if not play_again in ['y', 'n']:
+        return False
+
+    return True
+
 def is_valid_bet(bet):
     if not bet.isdigit():
         return False
@@ -261,13 +293,18 @@ def is_valid_player_move(move):
     if move not in valid_inputs:
         return False
 
+    if move == 'd' and PLAYER_BALANCE < BET:
+        print(STRINGS_DICTIONARY.low_balance)
+        return False
+
     return True
 
 def reset_game():
     global PLAYER_CARDS, PLAYER_STOPPED
     global DEALER_CARDS, DEALER_STOPPED
-    global BET
+    global BET, GAME_RESULT
     BET = 0
+    GAME_RESULT = None
     PLAYER_STOPPED = False
     DEALER_STOPPED = False
     PLAYER_CARDS = []
@@ -356,7 +393,7 @@ def init_strings_dictionary():
     Please enter amount between {min_bet} and {max_bet} or \'QUIT\' to end the game
     '''.format(min_bet=MIN_BET, max_bet=MAX_BET)
     STRINGS_DICTIONARY.low_balance = '''
-    This amount is bigger than your balance. Please enter amount that doesn\'t exceed {}:
+    This amount is bigger than your balance. Your balance is {}.
     '''.format(PLAYER_BALANCE)
     STRINGS_DICTIONARY.money = '''
     Money: {}'''
@@ -364,6 +401,8 @@ def init_strings_dictionary():
     (H)it, (S)tand, (D)ouble down? '''
     STRINGS_DICTIONARY.you_drew = '''
     You drew a {}.'''
+    STRINGS_DICTIONARY.dealer_drew = '''
+    Dealer drew a {}.'''
     STRINGS_DICTIONARY.you_won = '''
     You won ${}!'''
 
@@ -371,7 +410,8 @@ def init_strings_dictionary():
     Bye!'''
     STRINGS_DICTIONARY.play_again = '''
     Play again? y/n: '''
-
+    STRINGS_DICTIONARY.separator = '''
+    ==============================='''
 
 class StringsDictionary:
     pass
