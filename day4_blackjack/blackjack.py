@@ -392,9 +392,9 @@ def init_strings_dictionary():
 |  {value}|
  --- '''
     STRINGS_DICTIONARY.money = '''
-    Money: {}'''.format(PLAYER_BALANCE)
+    Money: ${}'''.format(PLAYER_BALANCE)
     STRINGS_DICTIONARY.bet = '''
-    Bet: {}'''
+    Bet: ${}'''
     STRINGS_DICTIONARY.player = '''
     PLAYER: {}'''
     STRINGS_DICTIONARY.dealer = '''
@@ -406,7 +406,7 @@ def init_strings_dictionary():
     Please enter amount between {min_bet} and {max_bet} or \'QUIT\' to end the game
     '''.format(min_bet=MIN_BET, max_bet=MAX_BET)
     STRINGS_DICTIONARY.low_balance = '''
-    This amount is bigger than your balance. Your balance is {}.
+    This amount is bigger than your balance. Your balance is ${}.
     '''.format(PLAYER_BALANCE)
     STRINGS_DICTIONARY.money = '''
     Money: {}'''
@@ -420,7 +420,7 @@ def init_strings_dictionary():
     You won ${}!'''
 
     STRINGS_DICTIONARY.your_final_total = '''
-    Your final balance is {}.'''
+    Your final balance is ${}.'''
     STRINGS_DICTIONARY.goodbye_message = '''
     Bye!'''
     STRINGS_DICTIONARY.play_again = '''
