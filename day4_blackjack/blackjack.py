@@ -4,206 +4,214 @@ HEARTS = chr(9829)
 DIAMONDS = chr(9830)
 SPADES = chr(9824)
 CLUBS = chr(9827)
-MIN_VALUE = 2
-MAX_VALUE = 10
-VALUE_MAP = {}
-WINNING_VALUE = 21
+MIN_CARD_VALUE = 2
+MAX_CARD_VALUE = 10
+DECK = []
+CARD_VALUE_MAP = {}
+
 PLAY_AGAIN = True
-GAME_OVER = False
-INITIAL_PLAYER_BALANCE = 5000
+INITIAL_PLAYER_BALANCE = 1000
 PLAYER_BALANCE = INITIAL_PLAYER_BALANCE
 MIN_BET = 1
 MAX_BET = 5000
-MAX_DEALER_TOTAL = 17
 BET = 0
-CARDS_BACK = '''
- ---
-|###|
-|###|
-|###|
- ---
-'''
-CARDS_FRONT = '''
- ___
-|{value}  |
-| {suit} |
-|  {value}|
- ---
-'''
-DECK = []
 PLAYER_CARDS = []
 DEALER_CARDS = []
 PLAYER_STOPPED = False
 DEALER_STOPPED = False
 
-def get_card_front(value, suit):
-    return CARDS_FRONT.format(value=value, suit=suit)
-
 def main():
     init()
-    #show_intro_message()
+    while PLAY_AGAIN:
+        play()
 
-    play()
+def play():
+    init_new_game()
+    show_current_results()
+    while not (PLAYER_STOPPED and DEALER_STOPPED):
+        player_move()
+        dealer_move()
 
-def player_move():
-    move = input(STRINGS_DICTIONARY.hit_stand_double)
-    return move.lower()
+    calculate_results()
+    prompt_play_again()
 
-def is_valid_move(move):
-    valid_inputs = ['h', 'hit', 's', 'stand', 'd', 'double down']
-    if move not in valid_inputs:
+def prompt_play_again():
+    play_again = input(STRINGS_DICTIONARY.play_again)
+
+    while not is_valid_play_again(play_again):
+        play_again = input(STRINGS_DICTIONARY.play_again)
+
+    if play_again == 'n':
+        quit()
+
+def is_valid_play_again(play_again):
+    if not play_again.isalpha():
+        return False
+
+    if not play_again in ['y', 'n']:
         return False
 
     return True
 
-def play():
-    global GAME_OVER
-    start_new_game()
-    while not GAME_OVER:
-        move = player_move()
-        while not is_valid_move(move):
-            move = player_move()
+def init_new_game():
+    reset_game()
+    show_player_balance()
+    take_player_bet()
+    draw_initial_cards(PLAYER_CARDS)
+    draw_initial_cards(DEALER_CARDS)
 
-        if move == 'h':
-            hit()
-        elif move == 's':
-            stand()
-        elif move == 'd':
-            double_down()
-        calculate_results()
+def take_player_bet():
+    global BET, PLAYER_BALANCE
+    bet = get_bet()
+    print(STRINGS_DICTIONARY.bet.format(bet))
+    BET += int(bet)
+    PLAYER_BALANCE -= int(bet)
 
-        if not DEALER_STOPPED:
-            dealer_move()
-            calculate_results()
+def player_move():
+    move = get_player_move_input()
 
-        show_round_results()
+    if move == 'h':
+        hit()
+    elif move == 's':
+        stand()
+    elif move == 'd':
+        double_down()
+
+    sums = get_sums(PLAYER_CARDS)
+    went_above_21 = all(sum > 21 for sum in sums)
+    if went_above_21:
+        player_lost()
 
 def dealer_move():
-    global DEALER_STOPPED, DEALER_CARDS
+    global DEALER_STOPPED
     if DEALER_STOPPED:
         return
 
-    dealer_sums = get_sum(DEALER_CARDS)
-    if MAX_DEALER_TOTAL in dealer_sums:
+    card = draw_card()
+    dealer_draws(card)
+
+    sums = get_sums(DEALER_CARDS)
+
+    reached_soft_17 = any(sum >= 17 for sum in sums)
+    if reached_soft_17:
         DEALER_STOPPED = True
 
-    card = draw_card()
-    DEALER_CARDS.append(card)
+    went_above_21 = all(sum > 21 for sum in sums)
+    if went_above_21:
+        player_won()
 
 def calculate_results():
-    global DEALER_STOPPED
-    dealer_sums = get_sum(DEALER_CARDS)
-    player_sums = get_sum(PLAYER_CARDS)
+    dealer_sums = get_sums(DEALER_CARDS)
+    player_sums = get_sums(PLAYER_CARDS)
 
-    dealer_stops = max(dealer_sums) >= 17
-    if dealer_stops:
-        DEALER_STOPPED = True
+    player_best = get_best_sum(player_sums)
+    dealer_best = get_best_sum(dealer_sums)
 
-    got_21_dealer = WINNING_VALUE in dealer_sums
-    got_21_player = WINNING_VALUE in player_sums
+    if not (PLAYER_STOPPED and DEALER_STOPPED):
+        return
 
-    if PLAYER_STOPPED and DEALER_STOPPED:
-        player_best = max([sum for sum in player_sums if sum <= 21])
-        dealer_best = max([sum for sum in dealer_sums if sum <= 21])
-
-        if player_best == dealer_best:
-            tie()
-        elif player_best > dealer_best:
-            player_won()
-        else:
-            player_lost()
-    elif got_21_dealer and got_21_player:
+    if player_best == dealer_best:
         tie()
-    elif got_21_dealer:
-        player_lost()
-    elif got_21_player:
+    elif player_best > dealer_best:
         player_won()
+    else:
+        player_lost()
 
-    went_above_dealer = all(sum > WINNING_VALUE for sum in dealer_sums)
-    went_above_player = all(sum > WINNING_VALUE for sum in player_sums)
-    if went_above_dealer:
-        player_won()
-    elif went_above_player:
-        player_lost()
+def get_best_sum(sums):
+    if len(sums) == 1:
+        return sums[0]
+
+    return max([sum for sum in sums if sum <= 21])
+
+def draw_card():
+    return choices(DECK, k=1)[0]
+
+def player_draws(card):
+    PLAYER_CARDS.append(card)
+    print(STRINGS_DICTIONARY.you_drew.format(card))
+
+def dealer_draws(card):
+    DEALER_CARDS.append(card)
+
+def get_player_move_input():
+    move = input(STRINGS_DICTIONARY.hit_stand_double).lower()
+
+    while not is_valid_player_move(move):
+        move = input(STRINGS_DICTIONARY.hit_stand_double)
+
+    return move
+
 def stop_game():
-    global GAME_OVER, PLAYER_STOPPED, DEALER_STOPPED
-    GAME_OVER = True
+    global PLAYER_STOPPED, DEALER_STOPPED
     PLAYER_STOPPED = True
     DEALER_STOPPED = True
 
 def tie():
     stop_game()
-    print('Tie')
+    print('Tie.')
+
 def player_won():
     stop_game()
-    print('Player wins')
+    print('Player wins!')
+
 def player_lost():
     stop_game()
-    print('Player lost')
+    print('Player lost!')
 
-def start_new_game():
-    global BET, PLAYER_CARDS, DEALER_CARDS, PLAYER_BALANCE
-    print(STRINGS_DICTIONARY.money.format(PLAYER_BALANCE))
-    bet = get_bet()
-
-    if not bet:
-        return
-
-    print(STRINGS_DICTIONARY.bet.format(bet))
-    BET += int(bet)
-    PLAYER_CARDS += [draw_card(), draw_card()]
-    DEALER_CARDS += [draw_card(), draw_card()]
-    calculate_results()
-    show_round_results()
-
-def get_sum_string(potential_sums):
-    return ' or '.join(str(sum) for sum in potential_sums)
-
-def show_round_results():
-    dealer_sum = get_sum(DEALER_CARDS)
-    print(STRINGS_DICTIONARY.dealer.format(get_sum_string(dealer_sum)))
+def show_current_results():
+    dealer_sum = get_sums(DEALER_CARDS)
+    print(STRINGS_DICTIONARY.dealer.format(get_sums_string(dealer_sum)))
     show_hand(DEALER_CARDS)
 
-    player_sum = get_sum(PLAYER_CARDS)
-    print(STRINGS_DICTIONARY.player.format(get_sum_string(player_sum)))
+    player_sum = get_sums(PLAYER_CARDS)
+    print(STRINGS_DICTIONARY.player.format(get_sums_string(player_sum)))
     show_hand(PLAYER_CARDS)
+
+def draw_initial_cards(hand):
+    hand.append(draw_card())
+    hand.append(draw_card())
 
 def show_hand(cards):
     for card in cards:
         print(card)
 
-def draw_card():
-    return choices(DECK, k=1)[0]
-
-def get_sum(cards):
+def get_sums(cards):
     cards_without_aces = [card for card in cards if card[0] != 'A']
-    sum_without_aces = sum([VALUE_MAP[card[0]] for card in cards_without_aces])
+    sum_without_aces = sum([CARD_VALUE_MAP[card[0]] for card in cards_without_aces])
 
     n_of_aces = len(cards) - len(cards_without_aces)
     if n_of_aces == 0:
         return [sum_without_aces]
 
+    possible_aces_sum = get_possible_aces_sums(n_of_aces)
+    possible_sums = [(sum_without_aces + sum) for sum in possible_aces_sum]
+
+    if len(possible_sums) == 1:
+        return possible_sums
+
+    if 21 in possible_sums:
+        return [21]
+
+    return [sum for sum in possible_sums if sum <= 21]
+
+def get_possible_aces_sums(n_of_aces):
     possible_sums = []
     for n in range(n_of_aces + 1):
         low_ace_value = 1
         high_ace_value = 11
 
         possible_aces_sum = low_ace_value * n + high_ace_value * (n_of_aces - n)
-        possible_sums.append(sum_without_aces + possible_aces_sum)
+        possible_sums.append(possible_aces_sum)
         n -= 1
 
-    if len(possible_sums) > 1:
-        possible_sums = [x for x in possible_sums if x <= 21]
     return possible_sums
 
-def quit():
-    PLAY_AGAIN = False
-    print(STRINGS_DICTIONARY.goodbye_message)
+def get_sums_string(potential_sums):
+    return ' or '.join(str(sum) for sum in potential_sums)
 
 def hit():
     card = draw_card()
-    PLAYER_CARDS.append(card)
-    print(STRINGS_DICTIONARY.you_drew.format(card))
+    player_draws(card)
 
 def stand():
     global PLAYER_STOPPED
@@ -212,28 +220,23 @@ def stand():
 def double_down():
     global PLAYER_STOPPED
     card = draw_card()
-    PLAYER_CARDS.append(card)
-    print(STRINGS_DICTIONARY.you_drew.format(card))
+    player_draws(card)
     PLAYER_STOPPED = True
 
 def payout(amount):
     PLAYER_BALANCE += amount
 
-def is_valid_bet(bet):
-    if not bet.isdigit():
-        return False
-
-    if not MIN_BET <= int(bet) <= MAX_BET:
-        return False
-
-    return True
+def quit():
+    global GAME_OVER, PLAY_AGAIN
+    GAME_OVER = True
+    PLAY_AGAIN = False
+    print(STRINGS_DICTIONARY.goodbye_message)
 
 def get_bet():
     bet = input(STRINGS_DICTIONARY.how_much_bet)
 
     if bet == 'QUIT':
         stop_game()
-        quit()
         return
 
     while not is_valid_bet(bet):
@@ -244,8 +247,40 @@ def get_bet():
 
     return bet
 
+def is_valid_bet(bet):
+    if not bet.isdigit():
+        return False
+
+    if not MIN_BET <= int(bet) <= MAX_BET:
+        return False
+
+    return True
+
+def is_valid_player_move(move):
+    valid_inputs = ['h', 's', 'd']
+    if move not in valid_inputs:
+        return False
+
+    return True
+
+def reset_game():
+    global PLAYER_CARDS, PLAYER_STOPPED
+    global DEALER_CARDS, DEALER_STOPPED
+    global BET
+    BET = 0
+    PLAYER_STOPPED = False
+    DEALER_STOPPED = False
+    PLAYER_CARDS = []
+    DEALER_CARDS = []
+
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
+
+def show_player_balance():
+    print(STRINGS_DICTIONARY.money.format(PLAYER_BALANCE))
+
+def get_card_front(value, suit):
+    return CARDS_FRONT.format(value=value, suit=suit)
 
 def init():
     init_strings_dictionary()
@@ -253,20 +288,21 @@ def init():
     init_value_map()
 
 def init_deck():
-    global DECK
     suits = [HEARTS, DIAMONDS, SPADES, CLUBS]
-    values = [str(value) for value in range(MIN_VALUE, MAX_VALUE + 1)] + ['J', 'Q', 'K', 'A']
+    face_cards = ['J', 'Q', 'K', 'A']
+    numeric_cards = [str(value) for value in range(MIN_CARD_VALUE, MAX_CARD_VALUE + 1)]
+    card_values = numeric_cards + face_cards
     for suit in suits:
-        for value in values:
+        for value in card_values:
             card = (value, suit)
             DECK.append(card)
 
 def init_value_map():
-    for value in range(MIN_VALUE, MAX_VALUE + 1):
-        VALUE_MAP[str(value)] = value
+    for value in range(MIN_CARD_VALUE, MAX_CARD_VALUE + 1):
+        CARD_VALUE_MAP[str(value)] = value
 
     for face in ['J', 'Q', 'K']:
-        VALUE_MAP[face] = 10
+        CARD_VALUE_MAP[face] = 10
 
 ##############################
 def init_strings_dictionary():
@@ -291,6 +327,20 @@ def init_strings_dictionary():
         In case of a tie, the bet is returned to the player.
         The dealer stops hitting at 17.'''
 
+    STRINGS_DICTIONARY.card_back = '''
+     ---
+    |###|
+    |###|
+    |###|
+     ---
+    '''
+    STRINGS_DICTIONARY.card_front = '''
+     ___
+    |{value}  |
+    | {suit} |
+    |  {value}|
+     ---
+    '''
     STRINGS_DICTIONARY.money = '''
     Money: {}'''.format(PLAYER_BALANCE)
     STRINGS_DICTIONARY.bet = '''
@@ -319,6 +369,8 @@ def init_strings_dictionary():
 
     STRINGS_DICTIONARY.goodbye_message = '''
     Bye!'''
+    STRINGS_DICTIONARY.play_again = '''
+    Play again? y/n: '''
 
 
 class StringsDictionary:
