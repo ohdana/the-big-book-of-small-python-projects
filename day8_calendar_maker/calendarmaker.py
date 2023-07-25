@@ -15,13 +15,19 @@ def main():
     file_name = STRINGS_DICTIONARY.file_name.format(year, month)
     generate_calendar(year, month)
 
-def save_calendar_to_file(file_name):
-    print(STRINGS_DICTIONARY.saved_to.format(filename))
-
 def generate_calendar(year, month):
     first_day_of_month = date(year, month, 1)
     last_day_of_month = first_day_of_month + relativedelta(months=+1) - timedelta(days=1)
+    first_day, last_day = get_calendar_boundaries(first_day_of_month, last_day_of_month)
 
+    month_name = first_day_of_month.strftime("%B")
+    data_to_format_calendar = get_data_to_format_calendar(year, month_name, first_day, last_day)
+
+    calendar = STRINGS_DICTIONARY.calendar_pattern.format(*data_to_format_calendar)
+    print(calendar)
+    save_calendar_to_file(year, month, calendar)
+
+def get_calendar_boundaries(first_day_of_month, last_day_of_month):
     first_day_of_calendar = first_day_of_month
     while first_day_of_calendar.weekday() != FIRST_DAY_OF_WEEK:
         first_day_of_calendar -= timedelta(days=1)
@@ -29,16 +35,20 @@ def generate_calendar(year, month):
     last_day_of_calendar = last_day_of_month
     while last_day_of_calendar.weekday() != LAST_DAY_OF_WEEK:
         last_day_of_calendar += timedelta(days=1)
-    cursor = first_day_of_calendar
 
-    data_to_format_calendar = [first_day_of_month.strftime("%B"), year]
-    while cursor <= last_day_of_calendar:
+    return first_day_of_calendar, last_day_of_calendar
+
+def get_data_to_format_calendar(year, month_name, first_day, last_day):
+    data_to_format_calendar = [month_name, year]
+    cursor = first_day
+    while cursor <= last_day:
         day_str = str(cursor.day)
         if len(day_str) == 1:
             day_str = '0' + day_str
         data_to_format_calendar.append(day_str)
         cursor += timedelta(days=1)
-    print(STRINGS_DICTIONARY.calendar_pattern.format(*data_to_format_calendar))
+
+    return data_to_format_calendar
 
 def get_year_input():
     year = input(STRINGS_DICTIONARY.enter_the_year)
@@ -67,6 +77,13 @@ def is_valid_month_input(month):
         return False
 
     return MIN_MONTH <= int(month) <= MAX_MONTH
+
+def save_calendar_to_file(year, month, text):
+    file_name = STRINGS_DICTIONARY.file_name.format(year, month)
+    text_file = open(file_name, "w")
+    n = text_file.write(text)
+    text_file.close()
+    print(STRINGS_DICTIONARY.saved_to.format(file_name))
 
 def init():
     init_strings_dictionary()
