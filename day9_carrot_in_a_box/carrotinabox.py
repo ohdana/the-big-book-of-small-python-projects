@@ -8,6 +8,7 @@ IS_CARROT_IN_BOX_1 = False
 
 def main():
     init()
+    show_intro_message()
     play()
 
 def play():
@@ -27,6 +28,9 @@ def play():
         reveal_boxes(name1, name2)
         play_again = winner_and_play_again(name1, name2)
     say_bye()
+
+def show_intro_message():
+    print(STRINGS_DICTIONARY.intro_message)
 
 def say_bye():
     print(STRINGS_DICTIONARY.bye)
