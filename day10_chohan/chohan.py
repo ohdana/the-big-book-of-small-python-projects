@@ -19,21 +19,44 @@ def main():
 
 def play():
     print(STRINGS_DICTIONARY.money.format(PLAYER_BALANCE))
+    take_bet()
+    player_move = get_player_move_input()
+    dice = dealer_throws_dice()
+    show_dice(dice)
+    calculate_game_result(sum(dice), player_move)
+
+def calculate_game_result(dice_sum, player_move):
+    player_won = check_if_player_won(dice_sum, player_move)
+    if player_won:
+        player_won()
+    else:
+        player_lost()
+
+def take_bet():
     player_bet = get_bet()
     bet(int(player_bet))
+
+def dealer_throws_dice():
     print(STRINGS_DICTIONARY.dealer_throws_dice)
-    player_move = get_player_move_input()
-    dices = [throw_dice(), throw_dice()]
+    dice = [throw_dice(), throw_dice()]
+
+    return dice
+
+def show_dice(dice):
     print(STRINGS_DICTIONARY.dealer_reveals_dice)
-    print(dices)
-    player_won = check_if_player_won(sum(dices), player_move)
-    if player_won:
-        print(STRINGS_DICTIONARY.you_won.format(BET))
-        house_fee = BET * HOUSE_FEE_PERCENT
-        print(STRINGS_DICTIONARY.house_takes_fee.format(house_fee))
-        payout(BET * 2 - house_fee)
-    else:
-        print(STRINGS_DICTIONARY.you_lost)
+    print(dice)
+
+def player_won():
+    print(STRINGS_DICTIONARY.you_won.format(BET))
+    house_fee = calculate_house_fee()
+    print(STRINGS_DICTIONARY.house_takes_fee.format(house_fee))
+    payout(BET * 2 - house_fee)
+
+def player_lost():
+    print(STRINGS_DICTIONARY.you_lost)
+
+def calculate_house_fee():
+    return round(BET * HOUSE_FEE_PERCENT)
 
 def check_if_player_won(dices_sum, player_move):
     if dices_sum % 2 == 0:
