@@ -12,30 +12,23 @@ def main():
     play()
 
 def play():
-    global IS_CARROT_IN_BOX_1
     play_again = True
 
     while play_again:
-        name1 = get_player_name(1)
-        name2 = get_player_name(2)
-        show_closed_boxes(name1, name2)
-        peek_into_boxes(name1, name2)
+        player_names = [get_player_name(1), get_player_name(2)]
+        show_closed_boxes(*player_names)
+        peek_into_boxes(*player_names)
         clear_screen()
-        say_truth_or_lie(name1, name2)
-        swap = offer_to_swap(name1, name2)
+        say_truth_or_lie(*player_names)
+        swap = offer_to_swap(*player_names)
         if swap:
-            IS_CARROT_IN_BOX_1 = not IS_CARROT_IN_BOX_1
-        reveal_boxes(name1, name2)
-        play_again = winner_and_play_again(name1, name2)
+            swap_boxes()
+        reveal_boxes(*player_names)
+        play_again = show_winner_and_play_again(*player_names)
+
     say_bye()
 
-def show_intro_message():
-    print(STRINGS_DICTIONARY.intro_message)
-
-def say_bye():
-    print(STRINGS_DICTIONARY.bye)
-
-def winner_and_play_again(name1, name2):
+def show_winner_and_play_again(name1, name2):
     winner = name1
     if not IS_CARROT_IN_BOX_1:
         winner = name2
@@ -46,13 +39,6 @@ def winner_and_play_again(name1, name2):
         play_again = input(STRINGS_DICTIONARY.invalid_y_n)
 
     return play_again == 'y'
-
-def reveal_boxes(name1, name2):
-    print(STRINGS_DICTIONARY.opening_boxes)
-    if IS_CARROT_IN_BOX_1:
-        print(STRINGS_DICTIONARY.carrot_in_box1.format(name1, name2, BOX_COLOUR_1, BOX_COLOUR_2))
-    else:
-        print(STRINGS_DICTIONARY.carrot_in_box2.format(name1, name2, BOX_COLOUR_1, BOX_COLOUR_2))
 
 def say_truth_or_lie(name1, name2):
     print(STRINGS_DICTIONARY.say_sentence.format(name1, name2))
@@ -66,12 +52,6 @@ def offer_to_swap(name1, name2):
 
     return swap == 'y'
 
-def is_valid_y_n(text):
-    if not text:
-        return False
-
-    return text in ['y', 'n']
-
 def show_closed_boxes(name1, name2):
     format_boxes_data = [BOX_COLOUR_1, BOX_COLOUR_2, name1, name2]
     print(STRINGS_DICTIONARY.closed_boxes.format(*format_boxes_data))
@@ -80,28 +60,49 @@ def show_closed_boxes(name1, name2):
     input(STRINGS_DICTIONARY.press_enter)
 
 def peek_into_boxes(name1, name2):
-    global CARROT_IN_BOX_1
     print(STRINGS_DICTIONARY.you_get_to_look.format(name1))
     print(STRINGS_DICTIONARY.dont_look.format(name2))
     print(STRINGS_DICTIONARY.closed_eyes.format(name2))
     print(STRINGS_DICTIONARY.inside_of_box.format(name1))
-    IS_CARROT_IN_BOX_1 = random.randint(1, 2) == 1
+
+    put_carrot_in_random_box()
     if IS_CARROT_IN_BOX_1:
         print(STRINGS_DICTIONARY.box1_carrot.format(BOX_COLOUR_1, BOX_COLOUR_2, name1, name2))
     else:
         print(STRINGS_DICTIONARY.box1_empty.format(BOX_COLOUR_1, BOX_COLOUR_2, name1, name2))
     input(STRINGS_DICTIONARY.press_enter)
 
+def swap_boxes():
+    global IS_CARROT_IN_BOX_1
+    IS_CARROT_IN_BOX_1 = not IS_CARROT_IN_BOX_1
+
+def reveal_boxes(name1, name2):
+    print(STRINGS_DICTIONARY.opening_boxes)
+    if IS_CARROT_IN_BOX_1:
+        print(STRINGS_DICTIONARY.carrot_in_box1.format(BOX_COLOUR_1, BOX_COLOUR_2, name1, name2))
+    else:
+        print(STRINGS_DICTIONARY.carrot_in_box2.format(BOX_COLOUR_1, BOX_COLOUR_2, name1, name2))
+
+def put_carrot_in_random_box():
+    global IS_CARROT_IN_BOX_1
+    IS_CARROT_IN_BOX_1 = random.randint(1, 2) == 1
+
 def clear_screen():
     print('\n' * 100)
 
-def get_player_name(player_n):
-    name = input(STRINGS_DICTIONARY.player_enter_name.format(player_n))
+def get_player_name(n_of_player):
+    name = input(STRINGS_DICTIONARY.player_enter_name.format(n_of_player))
 
     while not is_valid_name_input(name):
         name = input(STRINGS_DICTIONARY.invalid_name)
 
     return name
+
+def is_valid_y_n(text):
+    if not text:
+        return False
+
+    return text in ['y', 'n']
 
 def is_valid_name_input(name):
     if not name:
@@ -111,6 +112,12 @@ def is_valid_name_input(name):
         return False
 
     return True
+
+def show_intro_message():
+    print(STRINGS_DICTIONARY.intro_message)
+
+def say_bye():
+    print(STRINGS_DICTIONARY.bye)
 
 def init():
     init_strings_dictionary()
@@ -139,7 +146,7 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.press_enter = '''
     Press Enter when ready...'''
     STRINGS_DICTIONARY.player_enter_name = '''
-    Human player {}, enter your name: '''
+    Player {}, enter your name: '''
     STRINGS_DICTIONARY.invalid_name = '''
     Please use the name that would be {}-{} characters long:
     '''.format(MIN_NAME_LENGTH, MAX_NAME_LENGTH)
