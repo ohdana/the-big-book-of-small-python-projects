@@ -44,7 +44,7 @@ def generate_are_millenials_killing_headline():
 
 def generate_what_you_dont_know_headline():
     noun = random.choice(NOUNS)
-    plural_noun = noun + 's'
+    plural_noun = get_plural_noun(noun)
     when = random.choice(WHEN)
 
     return STRINGS_DICTIONARY.what_you_dont_know.format(noun, plural_noun, when)
@@ -66,10 +66,8 @@ def generate_you_wont_believe_headline():
     return STRINGS_DICTIONARY.you_wont_believe.format(state, noun, pronoun, place)
 
 def generate_dont_want_you_to_know_headline():
-    noun1 = random.choice(NOUNS)
-    noun2 = random.choice(NOUNS)
-    plural_noun1 = noun1 + 's'
-    plural_noun2 = noun2 + 's'
+    plural_noun1 = get_plural_noun()
+    plural_noun2 = get_plural_noun()
 
     return STRINGS_DICTIONARY.dont_want_you_to_know.format(plural_noun1, plural_noun2)
 
@@ -81,8 +79,7 @@ def generate_gift_idea_headline():
     return STRINGS_DICTIONARY.gift_idea.format(number, noun, state)
 
 def generate_reasons_why_headline():
-    noun = random.choice(NOUNS)
-    plural_noun = noun + 's'
+    plural_noun = get_plural_noun()
     number1 = random.randint(MIN_RAND_INT, MAX_RAND_INT)
     number2 = random.randint(1, number1)
     return STRINGS_DICTIONARY.reasons_why.format(number1, plural_noun, number2)
@@ -101,6 +98,11 @@ def generate_job_automated_headline():
 
     return string_pattern.format(state, noun, possesive_pronoun, personal_pronoun)
 
+def get_plural_noun(noun=None):
+    if not noun:
+        noun = random.choice(NOUNS)
+    return noun + 's'
+
 def get_possesive_pronoun(personal_pronoun):
     return POSSESSIVE_PRONOUNS[PERSONAL_PRONOUNS.index(personal_pronoun)]
 
@@ -108,7 +110,7 @@ def get_object_pronoun(personal_pronoun):
     return OBJECT_PRONOUNS[PERSONAL_PRONOUNS.index(personal_pronoun)]
 
 def show_headlines(headlines):
-    print(headlines)
+    print('\n'.join(headlines))
 
 def get_n_of_headlines():
     n_of_headlines = input(STRINGS_DICTIONARY.enter_number)
