@@ -31,10 +31,10 @@ def create_next_generation(old_generation):
     return new_generation
 
 def get_cell_neighbours(window, line_number, column_number):
-    left = get_cell_by_coords(window, line_number, column_number-1)
-    right = get_cell_by_coords(window, line_number, column_number+1)
-    top = get_cell_by_coords(window, line_number-1, column_number)
-    bottom = get_cell_by_coords(window, line_number+1, column_number)
+    left = get_cell_by_coords(window, line_number, column_number - 1)
+    right = get_cell_by_coords(window, line_number, column_number + 1)
+    top = get_cell_by_coords(window, line_number - 1, column_number)
+    bottom = get_cell_by_coords(window, line_number + 1, column_number)
 
     return [top, right, bottom, left]
 
