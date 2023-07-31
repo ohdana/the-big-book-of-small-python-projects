@@ -2,6 +2,7 @@ DIGITS_MAP = {}
 
 def main():
     init()
+    show_intro_message()
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
@@ -49,6 +50,7 @@ def init_strings_dictionary():
     Implementation by @ohdana
 
     A seven segment number display module.
+    It doesn't really do anything. Just to be used in other projects :)
 
      __A__
     |     |    Each digit in a seven-segment display:
