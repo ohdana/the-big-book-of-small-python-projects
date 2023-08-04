@@ -13,7 +13,6 @@ MAX_N_OF_DICE = 6
 DICE_MAP = {}
 USER_CORRECT_ANSWERS = 0
 USER_INCORRECT_ANSWERS = 0
-USER_SCORE = 0
 POINTS_FOR_CORRECT_ANSWER = 4
 POINTS_FOR_INCORRECT_ANSWER = -1
 INITIAL_TIMER_SECONDS = 10
@@ -31,9 +30,6 @@ def show_canvas():
     lines = [''.join(line) for line in CANVAS]
     print('\n'.join(lines))
 
-def clear_canvas():
-    init_canvas()
-
 def show_dice(dice):
     for die in dice:
         allocate_die(die)
@@ -42,8 +38,8 @@ def show_dice(dice):
 
 def allocate_die(die):
     left_x, top_y = find_free_spot()
-
     die_img = get_die_img_lines(die)
+
     for i in range(DIE_HEIGHT):
         for j in range(DIE_WIDTH):
             CANVAS[top_y + i][left_x + j] = die_img[i][j]
@@ -74,49 +70,54 @@ def is_overlapping(left_x, top_y):
     return False
 
 def play():
-    global USER_CORRECT_ANSWERS, USER_INCORRECT_ANSWERS
     reset_game()
     seconds_left = INITIAL_TIMER_SECONDS
     deadline = datetime.now() + timedelta(seconds=seconds_left)
     while datetime.now() <= deadline:
-        n_of_dice = get_n_of_dice()
-        dice = [roll_die() for i in range(n_of_dice)]
-        show_dice(dice)
+        dice = throw_dice()
         user_answer = get_user_answer()
-        correct_answer = calculate_dice_sum(dice)
-        if is_correct_user_answer(user_answer, correct_answer):
-            update_user_score(POINTS_FOR_CORRECT_ANSWER)
-            USER_CORRECT_ANSWERS += 1
+        if is_correct_user_answer(user_answer, dice):
+            user_gives_correct_answer()
         else:
-            update_user_score(POINTS_FOR_INCORRECT_ANSWER)
-            USER_INCORRECT_ANSWERS += 1
-        clear_canvas()
+            user_gives_incorrect_answer()
+        reset_canvas()
     game_over()
     show_results()
+
+def throw_dice():
+    n_of_dice = get_n_of_dice()
+    dice = [roll_die() for i in range(n_of_dice)]
+    show_dice(dice)
+
+    return dice
+
+def get_n_of_dice():
+    return random.randint(MIN_N_OF_DICE, MAX_N_OF_DICE)
+
+def roll_die():
+    return random.randint(MIN_DIE_VALUE, MAX_DIE_VALUE)
+
+def user_gives_correct_answer():
+    global USER_CORRECT_ANSWERS
+    USER_CORRECT_ANSWERS += 1
+
+def user_gives_incorrect_answer():
+    global USER_INCORRECT_ANSWERS
+    USER_INCORRECT_ANSWERS += 1
 
 def game_over():
     print(STRINGS_DICTIONARY.time_up)
 
 def show_results():
     total_answers = USER_CORRECT_ANSWERS + USER_INCORRECT_ANSWERS
+    user_score = get_user_score()
     print(STRINGS_DICTIONARY.you_answered.format(USER_CORRECT_ANSWERS, total_answers))
-    print(STRINGS_DICTIONARY.your_score.format(USER_SCORE))
+    print(STRINGS_DICTIONARY.your_score.format(user_score))
 
-def get_n_of_dice():
-    return random.randint(MIN_N_OF_DICE, MAX_N_OF_DICE)
-
-def reset_game():
-    global USER_SCORE
-    global USER_CORRECT_ANSWERS, USER_INCORRECT_ANSWERS
-    USER_SCORE = 0
-    USER_CORRECT_ANSWERS = 0
-    USER_INCORRECT_ANSWERS = 0
-
-def update_user_score(points):
-    global USER_SCORE
-    USER_SCORE += points
-    if USER_SCORE < 0:
-        USER_SCORE = 0
+def get_user_score():
+    score_for_correct_answers = POINTS_FOR_CORRECT_ANSWER * USER_CORRECT_ANSWERS
+    score_for_incorrect_answers = POINTS_FOR_INCORRECT_ANSWER * USER_INCORRECT_ANSWERS
+    return score_for_correct_answers + score_for_incorrect_answers
 
 def get_user_answer():
     answer = input(STRINGS_DICTIONARY.enter_the_sum)
@@ -128,6 +129,10 @@ def get_user_answer():
 
 def calculate_dice_sum(dice):
     return sum(dice)
+
+def is_correct_user_answer(user_answer, dice):
+    correct_answer = calculate_dice_sum(dice)
+    return user_answer == correct_answer
 
 def prompt_play_again():
     answer = ''
@@ -143,9 +148,6 @@ def is_valid_y_n(answer):
 
     return answer in ['y', 'n']
 
-def is_correct_user_answer(user_answer, correct_answer):
-    return user_answer == correct_answer
-
 def is_valid_user_answer(answer):
     if not answer:
         return False
@@ -155,11 +157,16 @@ def is_valid_user_answer(answer):
 
     return True
 
-def get_die_img_lines(n):
-    return random.choice(DICE_MAP[n])
+def reset_canvas():
+    global CANVAS
+    CANVAS = []
+    for i in range(CANVAS_HEIGHT):
+        CANVAS.append([' '] * CANVAS_WIDTH)
 
-def roll_die():
-    return random.randint(MIN_DIE_VALUE, MAX_DIE_VALUE)
+def reset_game():
+    global USER_CORRECT_ANSWERS, USER_INCORRECT_ANSWERS
+    USER_CORRECT_ANSWERS = 0
+    USER_INCORRECT_ANSWERS = 0
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
@@ -172,13 +179,10 @@ def init_dice_map():
     DICE_MAP[5] = [STRINGS_DICTIONARY.dice5]
     DICE_MAP[6] = [STRINGS_DICTIONARY.dice6a, STRINGS_DICTIONARY.dice6b]
 
-def init_canvas():
-    global CANVAS
-    CANVAS = []
-    for i in range(CANVAS_HEIGHT):
-        CANVAS.append([' '] * CANVAS_WIDTH)
+def get_die_img_lines(n):
+    return random.choice(DICE_MAP[n])
 
-def init_die_dimansions():
+def init_die_dimensions():
     global DIE_HEIGHT, DIE_WIDTH
     any_die = DICE_MAP[1][0]
     DIE_HEIGHT = len(any_die)
@@ -187,8 +191,8 @@ def init_die_dimansions():
 def init():
     init_strings_dictionary()
     init_dice_map()
-    init_die_dimansions()
-    init_canvas()
+    init_die_dimensions()
+    reset_canvas()
 
 ##############################
 def init_strings_dictionary():
