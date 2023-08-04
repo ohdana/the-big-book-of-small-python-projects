@@ -26,49 +26,6 @@ def main():
         play()
         play_again = prompt_play_again()
 
-def show_canvas():
-    lines = [''.join(line) for line in CANVAS]
-    print('\n'.join(lines))
-
-def show_dice(dice):
-    for die in dice:
-        allocate_die(die)
-
-    show_canvas()
-
-def allocate_die(die):
-    left_x, top_y = find_free_spot()
-    die_img = get_die_img_lines(die)
-
-    for i in range(DIE_HEIGHT):
-        for j in range(DIE_WIDTH):
-            CANVAS[top_y + i][left_x + j] = die_img[i][j]
-
-    return left_x, top_y
-
-def find_free_spot():
-    min_x, min_y = 0, 0
-    max_x = CANVAS_WIDTH - DIE_WIDTH - 1
-    max_y = CANVAS_HEIGHT - DIE_HEIGHT - 1
-    x = random.randint(min_x, max_x)
-    y = random.randint(min_y, max_y)
-
-    if is_overlapping(x, y):
-        return find_free_spot()
-
-    return x, y
-
-def is_overlapping(left_x, top_y):
-    right_x = left_x + DIE_WIDTH
-    bottom_y = top_y + DIE_HEIGHT
-
-    for x in range(left_x, right_x):
-        for y in range(top_y, bottom_y):
-            if CANVAS[y][x] != ' ':
-                return True
-
-    return False
-
 def play():
     reset_game()
     seconds_left = INITIAL_TIMER_SECONDS
@@ -107,6 +64,39 @@ def user_gives_incorrect_answer():
 
 def game_over():
     print(STRINGS_DICTIONARY.time_up)
+
+def allocate_die(die):
+    left_x, top_y = find_free_spot()
+    die_img = get_die_img_lines(die)
+
+    for i in range(DIE_HEIGHT):
+        for j in range(DIE_WIDTH):
+            CANVAS[top_y + i][left_x + j] = die_img[i][j]
+
+    return left_x, top_y
+
+def find_free_spot():
+    min_x, min_y = 0, 0
+    max_x = CANVAS_WIDTH - DIE_WIDTH - 1
+    max_y = CANVAS_HEIGHT - DIE_HEIGHT - 1
+    x = random.randint(min_x, max_x)
+    y = random.randint(min_y, max_y)
+
+    if is_overlapping(x, y):
+        return find_free_spot()
+
+    return x, y
+
+def is_overlapping(left_x, top_y):
+    right_x = left_x + DIE_WIDTH
+    bottom_y = top_y + DIE_HEIGHT
+
+    for x in range(left_x, right_x):
+        for y in range(top_y, bottom_y):
+            if CANVAS[y][x] != ' ':
+                return True
+
+    return False
 
 def show_results():
     total_answers = USER_CORRECT_ANSWERS + USER_INCORRECT_ANSWERS
@@ -156,6 +146,16 @@ def is_valid_user_answer(answer):
         return False
 
     return True
+
+def show_dice(dice):
+    for die in dice:
+        allocate_die(die)
+
+    show_canvas()
+
+def show_canvas():
+    lines = [''.join(line) for line in CANVAS]
+    print('\n'.join(lines))
 
 def reset_canvas():
     global CANVAS
