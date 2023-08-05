@@ -1,30 +1,26 @@
 import re, random
 
-INPUT_REGEX = '^([1-9][0-9]*d[1-9][0-9]*([\+,\-][1-9][0-9]*)*)$'
+INPUT_REGEX = '^(([1-9][0-9]*)d([1-9][0-9]*)([\+,\-][1-9][0-9]*)*)$'
 
 def main():
     init()
     show_intro_message()
     while True:
         user_input = get_user_input()
-
         n_of_dice, n_of_sides, extra = parse_user_input(user_input)
         dice = roll_dice(n_of_dice, n_of_sides)
         show_result(dice, extra)
 
 def show_result(dice, extra):
-    result = dice[:]
     total = calculate_sum(dice, extra)
+    expanded_result = [str(die) for die in dice]
     if extra:
-        if extra > 0:
-            str_extra = '+{}'.format(extra)
-        else:
-            str_extra = '-{}'.format(extra)
-        result.append(str_extra)
+        expanded_result.append(f'{extra:+}')
+    expanded_result_str = '(' + ', '.join(expanded_result) + ')'
 
-    print(total, tuple(result))
+    print(total, expanded_result_str)
 
-def calculate_sum(dice, extra):
+def calculate_sum(dice, extra=0):
     return sum(dice) + extra
 
 def roll_dice(n_of_dice, n_of_sides):
@@ -34,15 +30,12 @@ def roll_die(n_of_sides):
     return random.randint(1, n_of_sides)
 
 def parse_user_input(user_input):
-    n_of_dice, tail = tuple(user_input.split('d'))
-    extra = 0
-    if '+' in tail:
-        n_of_sides, extra = tuple(tail.split('+'))
-    elif '-' in tail:
-        n_of_sides, extra = tuple(tail.split('-'))
-        extra = int(extra) * -1
-    else:
-        n_of_sides = tail
+    regex_match = re.search(INPUT_REGEX, user_input)
+    n_of_dice = regex_match.group(2)
+    n_of_sides = regex_match.group(3)
+    extra = regex_match.group(4)
+    if not extra:
+        extra = 0
 
     return int(n_of_dice), int(n_of_sides), int(extra)
 
@@ -61,7 +54,6 @@ def is_valid_user_input(user_input):
         return False
 
     if not re.search(INPUT_REGEX, user_input):
-        print('oops')
         return False
 
     return True
