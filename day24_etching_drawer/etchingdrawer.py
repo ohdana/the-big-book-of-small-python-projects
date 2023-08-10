@@ -5,29 +5,22 @@ W, A, S, D, H, C, F, QUIT = 'W', 'A', 'S', 'D', 'H', 'C', 'F', 'QUIT'
 VALID_INPUTS = [W, A, S, D, H, C, F, QUIT]
 COMMANDS_MAP = {}
 CURSOR = (0, 0)
-CHAR_UNDER_CURSOR = None
 COMMANDS_LOG = []
 GAME_OVER = False
 CANVAS_WIDTH, CANVAS_HEIGHT = 0, 0
 CANVAS = []
+DIRECTION_CHARS_MAP = {}
 
 UP_DOWN_CHAR         = chr(9474)  # Character 9474 is '│'
 LEFT_RIGHT_CHAR      = chr(9472)  # Character 9472 is '─'
-
 DOWN_RIGHT_CHAR      = chr(9484)  # Character 9484 is '┌'
 DOWN_LEFT_CHAR       = chr(9488)  # Character 9488 is '┐'
-
 UP_RIGHT_CHAR        = chr(9492)  # Character 9492 is '└'
 UP_LEFT_CHAR         = chr(9496)  # Character 9496 is '┘'
-
 UP_DOWN_RIGHT_CHAR   = chr(9500)  # Character 9500 is '├'
-
 UP_DOWN_LEFT_CHAR    = chr(9508)  # Character 9508 is '┤'
-
 DOWN_LEFT_RIGHT_CHAR = chr(9516)  # Character 9516 is '┬'
-
 UP_LEFT_RIGHT_CHAR   = chr(9524)  # Character 9524 is '┴'
-
 CROSS_CHAR           = chr(9532)  # Character 9532 is '┼'
 
 def main():
@@ -75,13 +68,12 @@ def is_valid_user_input(user_input):
     return True
 
 def update_cursor(x, y, action):
-    global CURSOR, CHAR_UNDER_CURSOR
+    global CURSOR
     old_x, old_y = CURSOR
     char_under_cursor = get_char_under_cursor(action)
     update_canvas(old_x, old_y, char_under_cursor)
 
     CURSOR = (x, y)
-    CHAR_UNDER_CURSOR = CANVAS[y][x]
     update_canvas(x, y, STRINGS_DICTIONARY.cursor)
 
 def get_char_under_cursor(action):
@@ -107,9 +99,6 @@ def get_cell(x, y):
 def update_canvas(x, y, char):
     CANVAS[y][x] = char
 
-def is_free_cell(x, y):
-    return CANVAS[y][x] == ' '
-
 def move_up():
     x, y = CURSOR
     if y > 0:
@@ -133,22 +122,6 @@ def move_left():
     if x > 0:
         log_command(A)
         update_cursor(x - 1, y, going_left)
-
-def is_empty(cell):
-    return cell == ' '
-
-def is_facing(char, direction):
-    facing_chars = []
-    if direction == D:
-       facing_chars = [LEFT_RIGHT_CHAR, DOWN_RIGHT_CHAR, UP_RIGHT_CHAR, UP_DOWN_RIGHT_CHAR, DOWN_LEFT_RIGHT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
-    elif direction == A:
-       facing_chars = [LEFT_RIGHT_CHAR, DOWN_LEFT_CHAR, UP_LEFT_CHAR, UP_LEFT_CHAR, DOWN_LEFT_RIGHT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
-    elif direction == W:
-       facing_chars = [UP_DOWN_CHAR, UP_RIGHT_CHAR, UP_LEFT_CHAR, UP_DOWN_RIGHT_CHAR, UP_DOWN_LEFT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
-    elif direction == S:
-       facing_chars = [UP_DOWN_CHAR, DOWN_LEFT_CHAR, DOWN_RIGHT_CHAR, UP_DOWN_LEFT_CHAR, UP_DOWN_RIGHT_CHAR, DOWN_LEFT_RIGHT_CHAR, CROSS_CHAR]
-
-    return char in facing_chars
 
 def going_up(left, top, right, bottom):
     if is_facing(left, D) and is_facing(right, A) and is_facing(bottom, W):
@@ -214,69 +187,8 @@ def going_left(left, top, right, bottom):
     else:
         return LEFT_RIGHT_CHAR
 
-def going_up2(left, top, right, bottom):
-    if not is_empty(left) and not is_empty(right) and not is_empty(bottom):
-        return CROSS_CHAR
-    elif not is_empty(left) and not is_empty(right):
-        return UP_LEFT_RIGHT_CHAR
-    elif not is_empty(left) and not is_empty(bottom):
-        return UP_DOWN_LEFT_CHAR
-    elif not is_empty(right) and not is_empty(bottom):
-        return UP_DOWN_RIGHT_CHAR
-    elif not is_empty(left):
-        return UP_LEFT_CHAR
-    elif not is_empty(right):
-        return UP_RIGHT_CHAR
-    else:
-        return UP_DOWN_CHAR
-
-def going_down2(left, top, right, bottom):
-    if not is_empty(left) and not is_empty(right) and not is_empty(top):
-        return CROSS_CHAR
-    elif not is_empty(left) and not is_empty(right):
-        return DOWN_LEFT_RIGHT_CHAR
-    elif not is_empty(left) and not is_empty(top):
-        return UP_DOWN_LEFT_CHAR
-    elif not is_empty(right) and not is_empty(top):
-        return UP_DOWN_RIGHT_CHAR
-    elif not is_empty(left):
-        return DOWN_LEFT_CHAR
-    elif not is_empty(right):
-        return DOWN_RIGHT_CHAR
-    else:
-        return UP_DOWN_CHAR
-
-def going_right2(left, top, right, bottom):
-    if not is_empty(left) and not is_empty(bottom) and not is_empty(top):
-        return CROSS_CHAR
-    elif not is_empty(top) and not is_empty(bottom):
-        return UP_DOWN_RIGHT_CHAR
-    elif not is_empty(left) and not is_empty(top):
-        return UP_LEFT_RIGHT_CHAR
-    elif not is_empty(left) and not is_empty(bottom):
-        return DOWN_LEFT_RIGHT_CHAR
-    elif not is_empty(top):
-        return UP_RIGHT_CHAR
-    elif not is_empty(bottom):
-        return DOWN_RIGHT_CHAR
-    else:
-        return LEFT_RIGHT_CHAR
-
-def going_left2(left, top, right, bottom):
-    if not is_empty(right) and not is_empty(bottom) and not is_empty(top):
-        return CROSS_CHAR
-    elif not is_empty(top) and not is_empty(bottom):
-        return UP_DOWN_LEFT_CHAR
-    elif not is_empty(right) and not is_empty(top):
-        return UP_LEFT_RIGHT_CHAR
-    elif not is_empty(right) and not is_empty(bottom):
-        return DOWN_LEFT_RIGHT_CHAR
-    elif not is_empty(top):
-        return UP_LEFT_CHAR
-    elif not is_empty(bottom):
-        return DOWN_LEFT_CHAR
-    else:
-        return LEFT_RIGHT_CHAR
+def is_facing(char, direction):
+    return char in DIRECTION_CHARS_MAP[direction]
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
@@ -285,6 +197,7 @@ def save():
     current_datetime = datetime.now()
     text_file = open('{}.txt'.format(datetime.now()), 'w')
     text_file.write(stringify_commands_log())
+    text_file.write('\n')
     text_file.write(get_drawing())
     text_file.close()
 
@@ -292,16 +205,22 @@ def show_help():
     print(STRINGS_DICTIONARY.help)
 
 def clear():
-    reset_commands_log()
+    log_command(C)
+    clear_canvas()
+
+def clear_canvas():
+    global CANVAS
+    CANVAS = []
+    for i in range(CANVAS_HEIGHT):
+        CANVAS.append([' '] * CANVAS_WIDTH)
+
+    x, y = CURSOR
+    CANVAS[y][x] = STRINGS_DICTIONARY.cursor
 
 def quit_game():
     global GAME_OVER
     GAME_OVER = True
     print(STRINGS_DICTIONARY.bye)
-
-def reset_commands_log():
-    global COMMANDS_LOG
-    COMMANDS_LOG = []
 
 def stringify_commands_log():
     return ''.join(COMMANDS_LOG)
@@ -309,6 +228,7 @@ def stringify_commands_log():
 def init():
     init_strings_dictionary()
     init_commands_map()
+    init_direction_chars_map()
     init_canvas()
 
 def init_commands_map():
@@ -322,18 +242,18 @@ def init_commands_map():
     COMMANDS_MAP[C] = clear
     COMMANDS_MAP[QUIT] = quit_game
 
+def init_direction_chars_map():
+    DIRECTION_CHARS_MAP[W] = [UP_DOWN_CHAR, UP_RIGHT_CHAR, UP_LEFT_CHAR, UP_DOWN_RIGHT_CHAR, UP_DOWN_LEFT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
+    DIRECTION_CHARS_MAP[A] = [LEFT_RIGHT_CHAR, DOWN_LEFT_CHAR, UP_LEFT_CHAR, UP_LEFT_CHAR, DOWN_LEFT_RIGHT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
+    DIRECTION_CHARS_MAP[S] = [UP_DOWN_CHAR, DOWN_LEFT_CHAR, DOWN_RIGHT_CHAR, UP_DOWN_LEFT_CHAR, UP_DOWN_RIGHT_CHAR, DOWN_LEFT_RIGHT_CHAR, CROSS_CHAR]
+    DIRECTION_CHARS_MAP[D] = [LEFT_RIGHT_CHAR, DOWN_RIGHT_CHAR, UP_RIGHT_CHAR, UP_DOWN_RIGHT_CHAR, DOWN_LEFT_RIGHT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
+
 def init_canvas():
-    global CANVAS_WIDTH, CANVAS_HEIGHT, CANVAS, CHAR_UNDER_CURSOR
+    global CANVAS_WIDTH, CANVAS_HEIGHT
     CANVAS_WIDTH, CANVAS_HEIGHT = shutil.get_terminal_size()
     CANVAS_WIDTH -= 1
     CANVAS_HEIGHT -= 5
-    CANVAS = []
-    for i in range(CANVAS_HEIGHT):
-        CANVAS.append([' '] * CANVAS_WIDTH)
-
-    x, y = CURSOR
-    CANVAS[y][x] = STRINGS_DICTIONARY.cursor
-    CHAR_UNDER_CURSOR = ' '
+    clear_canvas()
 
 ##############################
 def init_strings_dictionary():
