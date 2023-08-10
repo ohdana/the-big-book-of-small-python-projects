@@ -30,7 +30,6 @@ UP_LEFT_RIGHT_CHAR   = chr(9524)  # Character 9524 is '┴'
 
 CROSS_CHAR           = chr(9532)  # Character 9532 is '┼'
 
-
 def main():
     init()
     show_intro_message()
@@ -75,14 +74,35 @@ def is_valid_user_input(user_input):
 
     return True
 
-def update_cursor(x, y):
+def update_cursor(x, y, action):
     global CURSOR, CHAR_UNDER_CURSOR
     old_x, old_y = CURSOR
-    update_canvas(old_x, old_y, ' ')
+    char_under_cursor = get_char_under_cursor(action)
+    update_canvas(old_x, old_y, char_under_cursor)
 
     CURSOR = (x, y)
     CHAR_UNDER_CURSOR = CANVAS[y][x]
     update_canvas(x, y, STRINGS_DICTIONARY.cursor)
+
+def get_char_under_cursor(action):
+    return action(*get_neighbors(*CURSOR))
+
+def get_neighbors(x, y):
+    left_neighbor = get_cell(x - 1, y)
+    top_neighbor = get_cell(x, y - 1)
+    right_neighbor = get_cell(x + 1, y)
+    bottom_neighbor = get_cell(x, y + 1)
+
+    return left_neighbor, top_neighbor, right_neighbor, bottom_neighbor
+
+def get_cell(x, y):
+    if x < 0 or y < 0:
+        return ' '
+
+    if x >= CANVAS_WIDTH or y >= CANVAS_HEIGHT:
+        return ' '
+
+    return CANVAS[y][x]
 
 def update_canvas(x, y, char):
     CANVAS[y][x] = char
@@ -94,25 +114,169 @@ def move_up():
     x, y = CURSOR
     if y > 0:
         log_command(W)
-        update_cursor(x, y - 1)
+        update_cursor(x, y - 1, going_up)
 
 def move_down():
     x, y = CURSOR
     if y < CANVAS_HEIGHT:
         log_command(S)
-        update_cursor(x, y + 1)
+        update_cursor(x, y + 1, going_down)
 
 def move_right():
     x, y = CURSOR
     if x < CANVAS_WIDTH:
         log_command(D)
-        update_cursor(x + 1, y)
+        update_cursor(x + 1, y, going_right)
 
 def move_left():
     x, y = CURSOR
     if x > 0:
         log_command(A)
-        update_cursor(x - 1, y)
+        update_cursor(x - 1, y, going_left)
+
+def is_empty(cell):
+    return cell == ' '
+
+def is_facing(char, direction):
+    facing_chars = []
+    if direction == D:
+       facing_chars = [LEFT_RIGHT_CHAR, DOWN_RIGHT_CHAR, UP_RIGHT_CHAR, UP_DOWN_RIGHT_CHAR, DOWN_LEFT_RIGHT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
+    elif direction == A:
+       facing_chars = [LEFT_RIGHT_CHAR, DOWN_LEFT_CHAR, UP_LEFT_CHAR, UP_LEFT_CHAR, DOWN_LEFT_RIGHT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
+    elif direction == W:
+       facing_chars = [UP_DOWN_CHAR, UP_RIGHT_CHAR, UP_LEFT_CHAR, UP_DOWN_RIGHT_CHAR, UP_DOWN_LEFT_CHAR, UP_LEFT_RIGHT_CHAR, CROSS_CHAR]
+    elif direction == S:
+       facing_chars = [UP_DOWN_CHAR, DOWN_LEFT_CHAR, DOWN_RIGHT_CHAR, UP_DOWN_LEFT_CHAR, UP_DOWN_RIGHT_CHAR, DOWN_LEFT_RIGHT_CHAR, CROSS_CHAR]
+
+    return char in facing_chars
+
+def going_up(left, top, right, bottom):
+    if is_facing(left, D) and is_facing(right, A) and is_facing(bottom, W):
+        return CROSS_CHAR
+    elif is_facing(left, D) and is_facing(right, A):
+        return UP_LEFT_RIGHT_CHAR
+    elif is_facing(left, D) and is_facing(bottom, W):
+        return UP_DOWN_LEFT_CHAR
+    elif is_facing(right, A) and is_facing(bottom, W):
+        return UP_DOWN_RIGHT_CHAR
+    elif is_facing(left, D):
+        return UP_LEFT_CHAR
+    elif is_facing(right, A):
+        return UP_RIGHT_CHAR
+    else:
+        return UP_DOWN_CHAR
+
+def going_down(left, top, right, bottom):
+    if is_facing(left, D) and is_facing(right, A) and is_facing(top, S):
+        return CROSS_CHAR
+    elif is_facing(left, D) and is_facing(right, A):
+        return DOWN_LEFT_RIGHT_CHAR
+    elif is_facing(left, D) and is_facing(top, S):
+        return UP_DOWN_LEFT_CHAR
+    elif is_facing(right, A) and is_facing(top, S):
+        return UP_DOWN_RIGHT_CHAR
+    elif is_facing(left, D):
+        return DOWN_LEFT_CHAR
+    elif is_facing(right, A):
+        return DOWN_RIGHT_CHAR
+    else:
+        return UP_DOWN_CHAR
+
+def going_right(left, top, right, bottom):
+    if is_facing(left, D) and is_facing(bottom, W) and is_facing(top, S):
+        return CROSS_CHAR
+    elif is_facing(top, S) and is_facing(bottom, W):
+        return UP_DOWN_RIGHT_CHAR
+    elif is_facing(left, D) and is_facing(top, S):
+        return UP_LEFT_RIGHT_CHAR
+    elif is_facing(left, D) and is_facing(bottom, W):
+        return DOWN_LEFT_RIGHT_CHAR
+    elif is_facing(top, S):
+        return UP_RIGHT_CHAR
+    elif is_facing(bottom, W):
+        return DOWN_RIGHT_CHAR
+    else:
+        return LEFT_RIGHT_CHAR
+
+def going_left(left, top, right, bottom):
+    if is_facing(right, A) and is_facing(bottom, W) and is_facing(top, S):
+        return CROSS_CHAR
+    elif is_facing(top, S) and is_facing(bottom, W):
+        return UP_DOWN_LEFT_CHAR
+    elif is_facing(right, A) and is_facing(top, S):
+        return UP_LEFT_RIGHT_CHAR
+    elif is_facing(right, A) and is_facing(bottom, W):
+        return DOWN_LEFT_RIGHT_CHAR
+    elif is_facing(top, S):
+        return UP_LEFT_CHAR
+    elif is_facing(bottom, W):
+        return DOWN_LEFT_CHAR
+    else:
+        return LEFT_RIGHT_CHAR
+
+def going_up2(left, top, right, bottom):
+    if not is_empty(left) and not is_empty(right) and not is_empty(bottom):
+        return CROSS_CHAR
+    elif not is_empty(left) and not is_empty(right):
+        return UP_LEFT_RIGHT_CHAR
+    elif not is_empty(left) and not is_empty(bottom):
+        return UP_DOWN_LEFT_CHAR
+    elif not is_empty(right) and not is_empty(bottom):
+        return UP_DOWN_RIGHT_CHAR
+    elif not is_empty(left):
+        return UP_LEFT_CHAR
+    elif not is_empty(right):
+        return UP_RIGHT_CHAR
+    else:
+        return UP_DOWN_CHAR
+
+def going_down2(left, top, right, bottom):
+    if not is_empty(left) and not is_empty(right) and not is_empty(top):
+        return CROSS_CHAR
+    elif not is_empty(left) and not is_empty(right):
+        return DOWN_LEFT_RIGHT_CHAR
+    elif not is_empty(left) and not is_empty(top):
+        return UP_DOWN_LEFT_CHAR
+    elif not is_empty(right) and not is_empty(top):
+        return UP_DOWN_RIGHT_CHAR
+    elif not is_empty(left):
+        return DOWN_LEFT_CHAR
+    elif not is_empty(right):
+        return DOWN_RIGHT_CHAR
+    else:
+        return UP_DOWN_CHAR
+
+def going_right2(left, top, right, bottom):
+    if not is_empty(left) and not is_empty(bottom) and not is_empty(top):
+        return CROSS_CHAR
+    elif not is_empty(top) and not is_empty(bottom):
+        return UP_DOWN_RIGHT_CHAR
+    elif not is_empty(left) and not is_empty(top):
+        return UP_LEFT_RIGHT_CHAR
+    elif not is_empty(left) and not is_empty(bottom):
+        return DOWN_LEFT_RIGHT_CHAR
+    elif not is_empty(top):
+        return UP_RIGHT_CHAR
+    elif not is_empty(bottom):
+        return DOWN_RIGHT_CHAR
+    else:
+        return LEFT_RIGHT_CHAR
+
+def going_left2(left, top, right, bottom):
+    if not is_empty(right) and not is_empty(bottom) and not is_empty(top):
+        return CROSS_CHAR
+    elif not is_empty(top) and not is_empty(bottom):
+        return UP_DOWN_LEFT_CHAR
+    elif not is_empty(right) and not is_empty(top):
+        return UP_LEFT_RIGHT_CHAR
+    elif not is_empty(right) and not is_empty(bottom):
+        return DOWN_LEFT_RIGHT_CHAR
+    elif not is_empty(top):
+        return UP_LEFT_CHAR
+    elif not is_empty(bottom):
+        return DOWN_LEFT_CHAR
+    else:
+        return LEFT_RIGHT_CHAR
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
