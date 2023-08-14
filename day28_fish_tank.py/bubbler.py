@@ -13,17 +13,6 @@ class Bubbler:
         self.tick_duration = tick_duration
         self.bubbles = []
 
-    #def is_on(self):
-    #    return ON
-
-    #def switch_on(self):
-    #    global ON
-    #    ON = True
-    #    while self.is_on():
-    #        self.tick()
-    #        self.show_canvas()
-    #        time.sleep(self.tick_duration)
-
     def tick(self):
         new_bubble_needed = self.decide_if_new_bubble_needed()
         if new_bubble_needed:
@@ -76,6 +65,17 @@ class Bubbler:
     #        canvas[y][x] = bubble_char
 
     #    return canvas
+
+    #def is_on(self):
+    #    return ON
+
+    #def switch_on(self):
+    #    global ON
+    #    ON = True
+    #    while self.is_on():
+    #        self.tick()
+    #        self.show_canvas()
+    #        time.sleep(self.tick_duration)
 
 #bubbler = Bubbler(30)
 #bubbler.switch_on()

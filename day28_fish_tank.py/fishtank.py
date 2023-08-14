@@ -4,7 +4,7 @@ from tank import Tank
 from kelp import Kelp
 from bubbler import Bubbler
 
-N_OF_KELPS = 1
+N_OF_KELPS = 3
 N_OF_BUBBLERS = 2
 CANVAS_WIDTH, CANVAS_HEIGHT = 100, 30
 
@@ -50,8 +50,11 @@ def generate_bubbler():
     return Bubbler(CANVAS_HEIGHT)
 
 def generate_kelps():
+    kelps = []
     for i in range(N_OF_KELPS):
-        generate_kelp()
+        kelp = generate_kelp()
+        kelps.append(kelp)
+    return kelps
 
 def generate_kelp():
     return Kelp(CANVAS_HEIGHT)

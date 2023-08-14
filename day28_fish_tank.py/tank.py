@@ -1,5 +1,6 @@
 import random, time
 from bubbler import Bubbler
+from kelp import Kelp
 
 FLOOR_CHAR = '^'
 FLOOR_HEIGHT = 2
@@ -11,6 +12,7 @@ class Tank:
         self.floor = self.generate_floor()
         self.water = self.generate_water()
         self.bubblers = []
+        self.kelps = []
 
     def generate_floor(self):
         floor = []
@@ -42,6 +44,18 @@ class Tank:
     def get_dimensions(self):
         return self.width, self.height
 
+    def add_kelp(self, kelp):
+        if not kelp:
+            return
+
+        x = self.allocate_kelp(kelp.get_width())
+        self.kelps.append((kelp, x))
+
+    def allocate_kelp(self, kelp_width):
+        left_bottom_x = random.randint(0, self.width - kelp_width - 1)
+
+        return left_bottom_x
+
     def add_bubbler(self, bubbler):
         if not bubbler:
             return
@@ -53,6 +67,23 @@ class Tank:
         left_bottom_x = random.randint(0, self.width - bubbler_width - 1)
 
         return left_bottom_x
+
+    def draw_kelps(self, canvas):
+        for kelp, kelp_x_coord in self.kelps:
+            self.draw_kelp(canvas, kelp_x_coord, kelp)
+            kelp.tick()
+
+        return canvas
+
+    def draw_kelp(self, canvas, kelp_x_coord, kelp):
+        kelp_body = kelp.get_body()
+        for i in range(len(kelp_body) - 1):
+            kelp_char, kelp_char_x_coord = kelp_body[i]
+            x = kelp_x_coord + kelp_char_x_coord
+            y = self.height - 1 - i
+            canvas[y][x] = kelp_char
+
+        return canvas
 
     def draw_bubbles(self, canvas):
         for bubbler, bubbler_x_coord in self.bubblers:
@@ -70,6 +101,7 @@ class Tank:
     def tick(self):
         self.reset()
         canvas = self.get()
+        canvas = self.draw_kelps(canvas)
         canvas = self.draw_bubbles(canvas)
         self.floor = canvas[-2:]
         self.water = canvas[:-2]
@@ -78,6 +110,9 @@ class Tank:
 #tank = Tank(100, height)
 #tank.add_bubbler(Bubbler(height))
 #tank.add_bubbler(Bubbler(height))
+#tank.add_kelp(Kelp(height))
+#tank.add_kelp(Kelp(height))
+#tank.add_kelp(Kelp(height))
 #while True:
 #    tank.tick()
 #    tank.show()
