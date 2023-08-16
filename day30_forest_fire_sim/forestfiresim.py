@@ -1,8 +1,9 @@
 import random, time
 
 TREE, FIRE, EMPTY = 'A', 'W', ' '
-FIRE_PROBABILITY = 0.5
-NEW_TREE_PROBABILITY = 0.15
+FIRE_PROBABILITY_PERCENT = 20
+NEW_TREE_PROBABILITY_PERCENT = 10
+MIN_PERCENT, MAX_PERCENT = 1, 100
 CANVAS_WIDTH = 100
 CANVAS_HEIGHT = 30
 
@@ -12,11 +13,17 @@ def main():
     simulate()
 
 def simulate():
-    canvas = init_forest()
+    canvas = get_clean_canvas()
     while True:
-        show_canvas(canvas)
         canvas = tick(canvas)
+        show_canvas(canvas)
         time.sleep(1)
+
+def get_clean_canvas():
+    canvas = []
+    for i in range(CANVAS_HEIGHT):
+        canvas.append([EMPTY] * CANVAS_WIDTH)
+    return canvas
 
 def tick(current_canvas):
     canvas = []
@@ -25,7 +32,6 @@ def tick(current_canvas):
         for j in range(CANVAS_WIDTH):
             new_line.append(get_new_char(current_canvas, j, i))
         canvas.append(new_line)
-
     return canvas
 
 def get_new_char(canvas, x, y):
@@ -34,18 +40,14 @@ def get_new_char(canvas, x, y):
         return EMPTY
     elif current_char == EMPTY:
         if decide_if_grow_new_tree():
-           return TREE
+            return TREE
     elif current_char == TREE:
         if decide_if_lightning_strikes():
             return FIRE
-        neighbours = get_neighbours(canvas, x, y)
-        if any_neighbour_in_fire(neighbours):
+        if any_neighbour_in_fire(canvas, x, y):
             return FIRE
 
     return current_char
-
-def decide_if_lightning_strikes():
-    return random.randint(1, 100) < FIRE_PROBABILITY * 100
 
 def get_neighbours(canvas, x, y):
     left = get_neighbour(canvas,x - 1, y)
@@ -56,38 +58,27 @@ def get_neighbours(canvas, x, y):
     return left, top, right, bottom
 
 def get_neighbour(canvas, x, y):
-    if x < 0 or y < 0:
+    out_of_range = lambda x, min_value, max_value: x < min_value or x > max_value
+    if out_of_range(x, 0, CANVAS_WIDTH - 1):
         return None
-
-    if x >= CANVAS_WIDTH or y >= CANVAS_HEIGHT:
+    if out_of_range(y, 0, CANVAS_HEIGHT - 1):
         return None
 
     return canvas[y][x]
 
-def any_neighbour_in_fire(neighbours):
+def any_neighbour_in_fire(canvas, x, y):
+    neighbours = get_neighbours(canvas, x, y)
     return any([neighbour for neighbour in neighbours if neighbour == FIRE])
 
-def init_forest():
-    canvas = []
-    for i in range(CANVAS_HEIGHT):
-        new_line = []
-        for j in range(CANVAS_WIDTH):
-            new_line.append(generate_forest_char())
-        canvas.append(new_line)
-
-    return canvas
-
-def generate_forest_char():
-    if decide_if_grow_new_tree():
-        return TREE
-    return EMPTY
-
 def show_canvas(canvas):
-        lines = [''.join(line) for line in canvas]
-        print('\n'.join(lines))
+    lines = [''.join(line) for line in canvas]
+    print('\n'.join(lines))
 
 def decide_if_grow_new_tree():
-    return random.randint(1, 100) < NEW_TREE_PROBABILITY * 100
+    return random.randint(MIN_PERCENT, MAX_PERCENT) <= NEW_TREE_PROBABILITY_PERCENT
+
+def decide_if_lightning_strikes():
+    return random.randint(MIN_PERCENT, MAX_PERCENT) <= FIRE_PROBABILITY_PERCENT
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
