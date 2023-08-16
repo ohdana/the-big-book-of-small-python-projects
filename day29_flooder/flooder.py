@@ -16,35 +16,39 @@ CROSS_CHAR   = '+'
 YES, NO, QUIT = 'Y', 'N', 'QUIT'
 EASY, MEDIUM, HARD = 'E', 'M', 'H'
 DIFFICULTY_TYPES = {
-    EASY: [HEART_CHAR, BALL_CHAR, CROSS_CHAR],
-    MEDIUM: [HEART_CHAR, BALL_CHAR, TRIANGLE_CHAR, BALL_CHAR, CROSS_CHAR],
-    HARD: [HEART_CHAR, DIAMOND_CHAR, SPADE_CHAR, CLUB_CHAR, BALL_CHAR, TRIANGLE_CHAR, CROSS_CHAR] }
+    EASY: [HEART, BALL, CROSS],
+    MEDIUM: [HEART, BALL, TRIANGLE, CLUB, CROSS],
+    HARD: [HEART, DIAMOND, SPADE, CLUB, BALL, TRIANGLE, CROSS] }
 DIFFICULTY_NAMES_MAP = {}
 CHARS_MAP = { HEART: HEART_CHAR, DIAMOND: DIAMOND_CHAR, SPADE: SPADE_CHAR, CLUB: CLUB_CHAR,
     BALL: BALL_CHAR, TRIANGLE: TRIANGLE_CHAR, CROSS: CROSS_CHAR}
+CHAR_NAMES_MAP = { HEART: '(H)eart', DIAMOND: '(D)iamond', SPADE: '(S)pade', CLUB: '(C)lub',
+    BALL: '(B)all', TRIANGLE: '(T)riangle', CROSS: 'c(R)oss'}
 
 def main():
     init()
     show_intro_message()
-    play_again = True
-    while play_again:
+    while True:
         play()
-        play_again = prompt_play_again()
+        play_again = ask_if_play_again()
+        if not play_again:
+            break
     say_bye()
 
 def play():
     moves_left = INITIAL_N_OF_MOVES
     difficulty = get_difficulty_level()
-    available_chars = DIFFICULTY_TYPES[difficulty]
+    available_chars = [CHARS_MAP[char_type] for char_type in DIFFICULTY_TYPES[difficulty]]
     frame = Frame(CANVAS_WIDTH, CANVAS_HEIGHT, available_chars)
     while True:
         print(STRINGS_DICTIONARY.moves_left.format(moves_left))
         frame.show_canvas()
-        user_input = get_user_input()
+        user_input = get_user_input(difficulty)
+        if user_input == QUIT:
+            break
         moves_left = make_move(frame, user_input, moves_left)
         if moves_left == 0 or frame.is_filled_up_with_one_char():
             break
-
     frame.show_canvas()
     show_results(frame, difficulty, INITIAL_N_OF_MOVES - moves_left)
 
@@ -80,30 +84,27 @@ def get_difficulty_level():
 
     return user_input.upper()
 
-def get_user_input():
-    global GAME_OVER
-    user_input = input(STRINGS_DICTIONARY.choose_one)
-    if user_input.upper() == QUIT:
-        GAME_OVER = True
-        return
+def get_available_inputs(difficulty):
+    return DIFFICULTY_TYPES[difficulty]
 
-    if user_input.upper() not in [HEART, TRIANGLE, DIAMOND, BALL, CLUB, SPADE, CROSS]:
-        return get_user_input()
+def get_user_input(difficulty):
+    available_inputs = DIFFICULTY_TYPES[difficulty]
+    available_input_names = [CHAR_NAMES_MAP[x] for x in available_inputs]
+    user_input = input(STRINGS_DICTIONARY.choose_one.format(', '.join(available_input_names)))
+
+    if user_input.upper() not in available_inputs + [QUIT]:
+        return get_user_input(difficulty)
 
     return user_input.upper()
 
-def prompt_play_again():
-    answer = ''
-
-    while not is_valid_y_n(answer):
-        answer = input(STRINGS_DICTIONARY.play_again)
+def ask_if_play_again():
+    answer = input(STRINGS_DICTIONARY.play_again)
+    if not is_valid_y_n(answer):
+        return ask_if_play_again()
 
     return answer.upper() == YES
 
 def is_valid_y_n(answer):
-    if not answer:
-        return False
-
     return answer.upper() in [YES, NO]
 
 def say_bye():
@@ -146,7 +147,7 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.you_lost = '''
     You lost.'''
     STRINGS_DICTIONARY.choose_one = '''
-    Choose one of (H)eart, (T)riangle, (D)iamond, (B)all, (C)lub, (S)pade, c(R)oss or QUIT: '''
+    Choose one of {} or QUIT: '''
     STRINGS_DICTIONARY.choose_difficulty_level = '''
     Choose the difficulty -- (E)asy, (M)edium, (H)ard: '''
     STRINGS_DICTIONARY.difficulty = '''
