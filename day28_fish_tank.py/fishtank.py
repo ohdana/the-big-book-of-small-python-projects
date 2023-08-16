@@ -3,9 +3,11 @@ import random, time
 from tank import Tank
 from kelp import Kelp
 from bubbler import Bubbler
+from fish import Fish
 
 N_OF_KELPS = 3
 N_OF_BUBBLERS = 2
+N_OF_FISH = 10
 CANVAS_WIDTH, CANVAS_HEIGHT = 100, 30
 
 def main():
@@ -17,10 +19,11 @@ def run_animation():
     tank = generate_tank()
     add_bubblers_to_tank(tank)
     add_kelps_to_tank(tank)
+    add_fish_to_tank(tank)
     while True:
         tank.tick()
         tank.show()
-        time.sleep(0.5)
+        time.sleep(0.2)
 
 def add_bubblers_to_tank(tank):
     bubblers = generate_bubblers()
@@ -32,11 +35,27 @@ def add_kelps_to_tank(tank):
     for kelp in kelps:
         tank.add_kelp(kelp)
 
+def add_fish_to_tank(tank):
+    fish = generate_fish()
+    for fishie in fish:
+        tank.add_fish(fishie)
+
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
 
 def generate_tank():
     return Tank(CANVAS_WIDTH, CANVAS_HEIGHT)
+
+def generate_fish():
+    fish = []
+    for i in range(N_OF_FISH):
+        fishie = generate_fishie()
+        fish.append(fishie)
+
+    return fish
+
+def generate_fishie():
+    return Fish()
 
 def generate_bubblers():
     bubblers = []

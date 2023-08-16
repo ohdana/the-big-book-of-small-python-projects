@@ -1,7 +1,9 @@
 import random, math, time
-KELP_CHARS = [')', '(', '|']
+KELP_CHARS = [')', '(']
 MAX_WIDTH = 3
-MIN_WIDTH = 1
+MIN_WIDTH = 2
+MIN_SEGMENT_LENGTH = 2
+MAX_SEGMENT_LENGTH = 4
 
 class Kelp:
     def __init__(self, canvas_height):
@@ -15,8 +17,12 @@ class Kelp:
 
     def build_kelp(self):
         for i in range(self.length):
+            if len(self.body) > i:
+                continue
+            segment_length = random.randint(MIN_SEGMENT_LENGTH, MAX_SEGMENT_LENGTH)
             x_pos = random.randint(0, self.width - 1)
-            self.body.append((random.choice(KELP_CHARS), x_pos))
+            char = random.choice(KELP_CHARS)
+            self.body += [(char, x_pos)] * segment_length
 
     def get_width(self):
         return self.width
@@ -47,22 +53,22 @@ class Kelp:
 
         return char
 
-    def build_canvas(self):
-        canvas = []
-        for i in range(self.length):
-            canvas.append([' '] * self.width)
+    #def build_canvas(self):
+    #    canvas = []
+    #    for i in range(self.length):
+    #        canvas.append([' '] * self.width)
 
-        for i in range(self.length):
-            char, x_pos = self.body[i]
-            y_pos = self.length - i - 1
-            canvas[y_pos][x_pos] = char
+    #    for i in range(self.length):
+    #        char, x_pos = self.body[i]
+    #        y_pos = self.length - i - 1
+    #        canvas[y_pos][x_pos] = char
 
-        return canvas
+    #    return canvas
 
-    def show_canvas(self):
-        canvas = self.build_canvas()
-        lines = [''.join(line) for line in canvas]
-        print('\n'.join(lines))
+    #def show_canvas(self):
+    #    canvas = self.build_canvas()
+    #    lines = [''.join(line) for line in canvas]
+    #    print('\n'.join(lines))
 
 #kelp = Kelp(30)
 #while True:
