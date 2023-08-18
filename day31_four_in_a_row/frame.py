@@ -2,19 +2,23 @@ FRAME_HORIZONTAL_CHAR = '-'
 FRAME_VERTICAL_CHAR = '|'
 FRAME_CORNER_CHAR = '+'
 CELL_EMPTY_CHAR = '.'
+N_OF_ROWS, N_OF_COLS = 6, 7
 WINNING_COMBO_LENGTH = 4
 TOP_ROW_POINTER = 2 # row 0 of the frame is the header, row 1 is the top outline of the frame
 
 class Frame:
-    def __init__(self, width, height, token_types):
-        self.width = width
-        self.height = height
+    def __init__(self, token_types):
+        self.width = N_OF_COLS
+        self.height = N_OF_ROWS
         self.token_types = token_types
         self.body = self.build()
-        self.column_n_of_free_slots = [height for i in range(width)]
+        self.column_n_of_free_slots = [self.height for i in range(self.width)]
+
+    def get_n_of_columns(self):
+        return N_OF_COLS
 
     def get(self):
-        return self.body()
+        return self.body
 
     def get_image(self):
         pass
@@ -43,12 +47,9 @@ class Frame:
         print('\n'.join(lines))
 
     def has_space_column(self, column_number):
-        #return self.body[TOP_ROW_POINTER][column_number] == CELL_EMPTY_CHAR
-        return self.column_n_of_free_slots[column_number - 1]
+        return self.column_n_of_free_slots[column_number - 1] > 0
 
     def has_space(self):
-        #top_row = self.body[TOP_ROW_POINTER]
-        #return any([cell == CELL_EMPTY_CHAR for cell in top_row])
         return any([n > 0 for n in self.column_n_of_free_slots])
 
     def get_winner(self):
@@ -64,7 +65,7 @@ class Frame:
     def did_horizontal_line(self, winning_combo):
         lines = [''.join(line) for line in self.body]
         for line in lines:
-            if winning_combo in line:
+            if winning_combo in ''.join(line):
                 return True
 
         return False
@@ -72,7 +73,7 @@ class Frame:
     def did_vertical_line(self, winning_combo):
         columns = self.get_columns()
         for column in columns:
-            if winning_combo in column:
+            if winning_combo in ''.join(column):
                 return True
 
         return False
@@ -80,17 +81,74 @@ class Frame:
     def did_diagonal_line(self, winning_combo):
         diagonals = self.get_diagonals()
         for diagonal in diagonals:
-            if winning_combo in diagonal:
+            if winning_combo in ''.join(diagonal):
                 return True
 
         return False
 
     def get_diagonals(self):
         diagonals = []
-        #for i in range(self.height):
-        #    for j in range(self.width):
-        #        diagonals.append()
+        downward_diagonals_coords = self.get_downward_diagonals()
+        upward_diagonals_coords = self.get_upward_diagonals()
+        diagonals_coords = downward_diagonals_coords + upward_diagonals_coords
+        for diagonal_coords in diagonals_coords:
+            diagonal = []
+            for x, y in diagonal_coords:
+                diagonal.append(self.body[y][x])
+            diagonals.append(diagonal)
+
         return diagonals
+
+    def get_downward_diagonals(self):
+        diagonals = []
+        start_cells = []
+        for i in range(self.height):
+            start_cells.append((i, 0))
+        for j in range(self.width):
+            start_cells.append((0, j))
+
+        diagonals = []
+        for cell in set(start_cells):
+            diagonals.append(self.build_downward_diagonal(cell))
+        return diagonals
+
+    def build_downward_diagonal(self, cell):
+        x, y = cell
+        cells = []
+        while y <= self.width and x <= self.height:
+            cells.append((x, y))
+            x += 1
+            y += 1
+        return cells
+
+    def get_upward_diagonals(self):
+        diagonals = []
+        start_cells = []
+        for i in range(self.height):
+            start_cells.append((i, 0))
+        for j in range(self.width):
+            start_cells.append((self.height, j))
+
+        diagonals = []
+        for cell in set(start_cells):
+            diagonals.append(self.build_upward_diagonal(cell))
+        return diagonals
+
+    def build_upward_diagonal(self, cell):
+        x, y = cell
+        cells = []
+        while x >= 0 and y >= 0:
+            if y <= self.width and x <= self.height:
+                cells.append((x, y))
+            x -= 1
+            y += 1
+        return cells
+
+    def is_in_bound_x(self, x):
+        return 0 <= x <= self.height
+
+    def is_in_bound_y(self, y):
+        return 0 <= y <= self.width
 
     def get_columns(self):
         columns = []
@@ -116,6 +174,9 @@ class Frame:
         self.add_header(frame)
 
         return frame
+
+    def has_winner(self):
+        return self.get_winner() is not None
 
     def get_horizontal_line(self, length):
         return [FRAME_HORIZONTAL_CHAR for i in range(length)]
@@ -146,13 +207,3 @@ class Frame:
         for corner in corners:
             x, y = corner
             frame[y][x] = FRAME_CORNER_CHAR
-
-frame = Frame(5, 7, ['X', 'O'])
-frame.throw_token('X', 2)
-frame.throw_token('X', 2)
-frame.throw_token('X', 2)
-frame.throw_token('X', 2)
-frame.show_canvas()
-#print(frame.get_winner())
-lines = [''.join(line) for line in frame.get_columns()]
-print('\n'.join(lines))
