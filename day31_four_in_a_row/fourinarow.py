@@ -1,5 +1,6 @@
 from frame import Frame
 
+YES, NO = "Y", "N"
 QUIT = 'QUIT'
 PLAYER_1, PLAYER_2 = 'PLAYER_1', 'PLAYER_2'
 PLAYERS = [PLAYER_1, PLAYER_2]
@@ -8,7 +9,12 @@ PLAYER_CHARS = { PLAYER_1: 'X', PLAYER_2: 'O' }
 def main():
     init()
     show_intro_message()
-    play()
+
+    play_again = True
+    while play_again:
+        play()
+        play_again = ask_if_play_again()
+    say_bye()
 
 def play():
     frame = build_frame(PLAYER_CHARS.values())
@@ -33,6 +39,17 @@ def play():
         if winner:
             win(winner)
             break
+
+def ask_if_play_again():
+    answer = input(STRINGS_DICTIONARY.play_again)
+    if not is_valid_y_n(answer):
+        return ask_if_play_again()
+
+    return answer.upper() == YES
+
+
+def is_valid_y_n(answer):
+    return answer.upper() in [YES, NO]
 
 def say_bye():
     print(STRINGS_DICTIONARY.bye)
@@ -95,6 +112,8 @@ def init_strings_dictionary():
     Player {}, enter a column or QUIT: '''
     STRINGS_DICTIONARY.bye = '''
     Bye!'''
+    STRINGS_DICTIONARY.play_again = """
+    Play again? y/n: """
 
 class StringsDictionary:
     pass
