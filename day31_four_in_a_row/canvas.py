@@ -1,5 +1,5 @@
 import copy
-import diagonals_builder, columns_builder, rows_builder
+from lines_builder import LinesBuilder
 
 GAP_CHAR = ' '
 FRAME_HORIZONTAL_CHAR = '-'
@@ -118,9 +118,10 @@ class Canvas:
 
     def init_coords_maps(self):
         global LINES_COORDS
-        rows_coords = rows_builder.get_rows(self.width, self.height)
-        columns_coords = columns_builder.get_columns(self.width, self.height)
-        diagonals_coords = diagonals_builder.get_diagonals(self.width, self.height)
+        lines_builder = LinesBuilder(self.width, self.height)
+        rows_coords = lines_builder.get_rows()
+        columns_coords = lines_builder.get_columns()
+        diagonals_coords = lines_builder.get_diagonals()
         LINES_COORDS = rows_coords + columns_coords + diagonals_coords
 
     def init_column_numbers(self):
