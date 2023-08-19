@@ -1,10 +1,12 @@
-from frame import Frame
+from canvas import Canvas
 
 YES, NO = 'Y', 'N'
 QUIT = 'QUIT'
+HEART_CHAR      = chr(9829)  # Character 9829 is '♥'
+SPADE_CHAR      = chr(9824)  # Character 9824 is '♠'
 PLAYER_1, PLAYER_2 = 'PLAYER_1', 'PLAYER_2'
 PLAYERS = [PLAYER_1, PLAYER_2]
-PLAYER_CHARS = { PLAYER_1: 'X', PLAYER_2: 'O' }
+PLAYER_CHARS = { PLAYER_1: HEART_CHAR, PLAYER_2: SPADE_CHAR }
 
 def main():
     init()
@@ -18,40 +20,42 @@ def main():
     say_bye()
 
 def play():
-    frame = get_frame(PLAYER_CHARS.values())
-    column_numbers = frame.get_column_numbers()
+    canvas = get_canvas(PLAYER_CHARS.values())
+    column_numbers = canvas.get_column_numbers()
     turn = 0
-    show_frame(frame)
+    show_canvas(canvas)
     while True:
-        if not frame.has_space():
-            draw()
-            break
-        turn = (turn + 1) % len(PLAYERS)
-        player = PLAYERS[turn]
-        player_char = PLAYER_CHARS[player]
+        player_char = PLAYER_CHARS[PLAYERS[turn]]
         user_input = get_user_input(player_char, column_numbers)
         if user_input == QUIT:
             say_bye()
             break
         column_number = int(user_input)
-        make_move(frame, player_char, column_number)
-        show_frame(frame)
-        winner = get_winner(frame)
+        make_move(canvas, player_char, column_number)
+        show_canvas(canvas)
+        turn = calculate_turn(turn)
+        winner = get_winner(canvas)
         if winner:
             win(winner)
             break
+        if not canvas.has_space():
+            draw()
+            break
 
-def get_winner(frame):
-    return frame.get_winning_token()
+def calculate_turn(turn):
+    return (turn + 1) % len(PLAYERS)
 
-def make_move(frame, player_char, column_number):
-    frame.throw_token(player_char, column_number)
+def get_winner(canvas):
+    return canvas.get_winning_token()
+
+def make_move(canvas, player_char, column_number):
+    canvas.throw_token(player_char, column_number)
 
 def get_user_input(player_char, column_numbers):
     user_input = input(STRINGS_DICTIONARY.enter_column.format(player_char)).upper()
 
     if not is_valid_user_input(user_input, column_numbers):
-        return get_user_input(player_char)
+        return get_user_input(player_char, column_numbers)
 
     return user_input
 
@@ -85,11 +89,11 @@ def draw():
 def win(winner):
     print(STRINGS_DICTIONARY.player_wins.format(winner))
 
-def get_frame(chars):
-    return Frame(chars)
+def get_canvas(chars):
+    return Canvas(chars)
 
-def show_frame(frame):
-    lines = [''.join(line) for line in frame.get()]
+def show_canvas(canvas):
+    lines = [''.join(line) for line in canvas.get()]
     print('\n'.join(lines))
 
 def show_intro_message():
