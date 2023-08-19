@@ -1,12 +1,14 @@
 from canvas import Canvas
 
-YES, NO = 'Y', 'N'
-QUIT = 'QUIT'
 HEART_CHAR      = chr(9829)  # Character 9829 is '♥'
 SPADE_CHAR      = chr(9824)  # Character 9824 is '♠'
+
+YES, NO, QUIT = 'Y', 'N', 'QUIT'
 PLAYER_1, PLAYER_2 = 'PLAYER_1', 'PLAYER_2'
 PLAYERS = [PLAYER_1, PLAYER_2]
 PLAYER_CHARS = { PLAYER_1: HEART_CHAR, PLAYER_2: SPADE_CHAR }
+
+GAME_OVER = False
 
 def main():
     init()
@@ -14,6 +16,7 @@ def main():
 
     play_again = True
     while play_again:
+        reset_game()
         play()
         play_again = ask_if_play_again()
 
@@ -21,26 +24,38 @@ def main():
 
 def play():
     canvas = get_canvas(PLAYER_CHARS.values())
-    column_numbers = canvas.get_column_numbers()
     turn = 0
     show_canvas(canvas)
-    while True:
+    while not GAME_OVER:
         player_char = PLAYER_CHARS[PLAYERS[turn]]
-        user_input = get_user_input(player_char, column_numbers)
-        if user_input == QUIT:
-            say_bye()
-            break
-        column_number = int(user_input)
-        make_move(canvas, player_char, column_number)
+        take_turn(canvas, player_char)
         show_canvas(canvas)
         turn = calculate_turn(turn)
-        winner = get_winner(canvas)
-        if winner:
-            win(winner)
-            break
-        if not canvas.has_space():
-            draw()
-            break
+        calculate_turn_results(canvas)
+
+def calculate_turn_results(canvas):
+    winner = get_winner(canvas)
+    if winner:
+        win(winner)
+        game_over()
+    elif not canvas.has_space():
+        draw()
+        game_over()
+
+def take_turn(canvas, player_char):
+    column_numbers = canvas.get_column_numbers()
+    user_input = get_user_input(player_char, column_numbers)
+    if user_input == QUIT:
+        game_over()
+    else:
+        column_number = int(user_input)
+        make_move(canvas, player_char, column_number)
+
+def game_over():
+    set_game_over(True)
+
+def reset_game():
+    set_game_over(False)
 
 def calculate_turn(turn):
     return (turn + 1) % len(PLAYERS)
@@ -104,6 +119,10 @@ def say_bye():
 
 def init():
     init_strings_dictionary()
+
+def set_game_over(value):
+    global GAME_OVER
+    GAME_OVER = value
 
 ##############################
 def init_strings_dictionary():

@@ -9,6 +9,7 @@ CELL_EMPTY_CHAR = '.'
 
 N_OF_ROWS = 6
 N_OF_COLS = 7
+COLUMN_NUMBERS = None
 WINNING_COMBO_LENGTH = 4
 LINES_COORDS = None
 
@@ -17,6 +18,7 @@ class Canvas:
         self.width = N_OF_COLS
         self.height = N_OF_ROWS
         self.init_coords_maps()
+        self.init_column_numbers()
         self.token_types = token_types
         self.grid = self.build_grid()
         self.column_n_of_free_slots = [self.height for i in range(self.width)]
@@ -42,7 +44,7 @@ class Canvas:
         return self.column_n_of_free_slots[column_number - 1] > 0
 
     def get_column_numbers(self):
-        return [i + 1 for i in range(N_OF_COLS)]
+        return COLUMN_NUMBERS
 
     def throw_token(self, token_char, column_number):
         if not self.has_space_column(column_number):
@@ -120,3 +122,7 @@ class Canvas:
         columns_coords = columns_builder.get_columns(self.width, self.height)
         diagonals_coords = diagonals_builder.get_diagonals(self.width, self.height)
         LINES_COORDS = rows_coords + columns_coords + diagonals_coords
+
+    def init_column_numbers(self):
+        global COLUMN_NUMBERS
+        COLUMN_NUMBERS = [i + 1 for i in range(N_OF_COLS)]
