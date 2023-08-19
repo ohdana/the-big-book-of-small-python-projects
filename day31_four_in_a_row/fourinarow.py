@@ -29,6 +29,8 @@ def play():
     while not GAME_OVER:
         player_char = PLAYER_CHARS[PLAYERS[turn]]
         take_turn(canvas, player_char)
+        if GAME_OVER:
+            break
         show_canvas(canvas)
         turn = calculate_turn(turn)
         calculate_turn_results(canvas)
