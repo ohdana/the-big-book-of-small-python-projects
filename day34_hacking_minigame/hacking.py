@@ -7,45 +7,90 @@ GARBAGE_CHARS = '~!@#$%^&*()_+-={}[]|;:,.<>?/'
 INITIAL_N_OF_TRIES = 4
 MIN_MEMORY_ADDRESS_DEC = 1
 MAX_MEMORY_ADDRESS_DEC = 100
-MAX_MEMORY_CELLS_TO_DISPLAY = 12
+MAX_MEMORY_CELLS_TO_DISPLAY = 16
 MIN_PASSWORD_LENGTH = 5
 MAX_PASSWORD_LENGTH = 9
+GAME_OVER = None
+TRIES_LEFT = None
 
 def main():
     init()
     show_intro_message()
     play_again = True
     while play_again:
-        reset_game()
         play()
         play_again = ask_if_play_again()
 
     say_bye()
 
 def play():
-    game_over = False
+    reset_game()
+    password, password_options = get_password_and_options()
+    show_computer_memory(password_options)
+    while not GAME_OVER:
+        try_guess_password(password)
+        if not GAME_OVER and ran_out_of_tries():
+            out_of_tries(password)
+            break
+        #print(STRINGS_DICTIONARY.enter_password.format(tries_left))
+        #user_input = input(STRINGS_DICTIONARY.input)
+        #if user_input.upper() == password.upper():
+        #    access_granted()
+        #    game_over = True
+        #    break
+        #n_of_correct_chars = get_n_of_correct_chars(password, user_input)
+        #access_denied(n_of_correct_chars, len(password))
+        #tries_left -= 1
+        #if tries_left == 0:
+        #    out_of_tries(password)
+        #    game_over = True
+
+def try_guess_password(password):
+    user_input = get_user_input()
+    set_tries(TRIES_LEFT - 1)
+    if guessed_password(user_input, password):
+        access_granted()
+        return
+    n_of_correct_chars = get_n_of_correct_chars(password, user_input)
+    access_denied(n_of_correct_chars, len(password))
+
+def set_tries(value):
+    global TRIES_LEFT
+    TRIES_LEFT = value
+
+def ran_out_of_tries():
+    return TRIES_LEFT <= 0
+
+def set_game_over(value):
+    global GAME_OVER
+    GAME_OVER = value
+
+def game_over():
+    set_game_over(True)
+
+def reset_game():
+    set_game_over(False)
+    set_tries(INITIAL_N_OF_TRIES)
+
+def guessed_password(guess, password):
+    return guess.upper() == password.upper()
+
+def get_user_input():
+    print(STRINGS_DICTIONARY.enter_password.format(TRIES_LEFT))
+    user_input = input(STRINGS_DICTIONARY.input)
+
+    return user_input
+
+def get_password_and_options():
     password_length = random.randint(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH)
     password, password_options = generate_password_options(password_length)
+    allocate_password_randomly(password, password_options)
+
+    return password, password_options
+
+def allocate_password_randomly(password, password_options):
     random_index = random.randint(0, len(password_options) - 1)
     password_options[0], password_options[random_index] = password_options[random_index], password_options[0]
-    show_computer_memory(password_options)
-    tries_left = INITIAL_N_OF_TRIES
-    while not game_over:
-        print(STRINGS_DICTIONARY.enter_password.format(tries_left))
-        user_input = input(STRINGS_DICTIONARY.input)
-        if user_input.upper() == password.upper():
-            access_granted()
-            game_over = True
-            break
-        n_of_correct_chars = get_n_of_correct_chars(password, user_input)
-        access_denied(n_of_correct_chars, password_length)
-        tries_left -= 1
-        if tries_left == 0:
-            out_of_tries(password)
-            game_over = True
-
-def out_of_tries(password):
-    print(STRINGS_DICTIONARY.out_of_tries.format(password))
 
 def get_n_of_correct_chars(password, user_input):
     counter = 0
@@ -85,6 +130,10 @@ def find_option(words, password):
             option = words[pointer]
             break
         pointer += 1
+
+    if not option:
+        return find_option(words, password)
+
     return option
 
 def can_be_option(word, password):
@@ -103,15 +152,13 @@ def show_computer_memory(password_options):
 def generate_computer_memory(password_options):
     polluted_password_options = pollute_password_options(password_options)
     computer_memory_lines = []
-    n_of_passwords = len(polluted_password_options)
-    for i in range(n_of_passwords // 2):
-        line = polluted_password_options[i] + GAP_CHAR * 3 + polluted_password_options[i + n_of_passwords // 2]
+    n_of_lines = len(polluted_password_options)
+    for i in range(n_of_lines // 2):
+        one_line_pair = [polluted_password_options[i], polluted_password_options[i + n_of_lines // 2]]
+        line = (GAP_CHAR * 3).join(one_line_pair)
         computer_memory_lines.append(line)
 
     return '\n'.join(computer_memory_lines)
-
-def generate_cell_content_length(password):
-    return len(password) * 2 + 1
 
 def pollute_password_options(password_options):
     result = []
@@ -119,37 +166,38 @@ def pollute_password_options(password_options):
     options_indices_in_result = random.choices(range(MAX_MEMORY_CELLS_TO_DISPLAY), k=len(password_options))
     cell_length = generate_cell_content_length(password_options[0])
     for i in range(MAX_MEMORY_CELLS_TO_DISPLAY):
-        cell_contents = ''
+        cell_contents = generate_garbage_string(cell_length)
         if i in options_indices_in_result:
             option = password_options.pop()
-            cell_contents = get_polluted_option(option)
-        else:
-            cell_contents = generate_garbage_string(cell_length)
+            cell_contents = get_polluted_password_option(cell_contents, option)
         result.append(hex(prefix_dec) + GAP_CHAR * 2 + cell_contents)
         prefix_dec += 1
 
     return result
 
-def get_polluted_option(option):
-    cell_content_length = generate_cell_content_length(option)
+def get_polluted_password_option(cell_contents, option):
+    cell_content_length = len(cell_contents)
     start_index = random.randint(0, cell_content_length - len(option) - 1)
-    result = random.choices(GARBAGE_CHARS, k=start_index)
-    result += option.upper()
-    result += random.choices(GARBAGE_CHARS, k=cell_content_length - start_index - len(option))
+    result = cell_contents[:start_index] + option.upper() + cell_contents[(start_index + len(option)):]
 
     return ''.join(result)
 
 def generate_garbage_string(length):
     return ''.join(random.choices(GARBAGE_CHARS, k=length))
 
+def generate_cell_content_length(password):
+    return len(password) * 2 + 1
+
 def access_granted():
     print(STRINGS_DICTIONARY.access_granted)
+    game_over()
 
 def access_denied(n_of_correct_chars, total_n_of_chars):
     print(STRINGS_DICTIONARY.access_denied.format(n_of_correct_chars, total_n_of_chars))
 
-def reset_game():
-    pass
+def out_of_tries(password):
+    print(STRINGS_DICTIONARY.out_of_tries.format(password))
+    game_over()
 
 def ask_if_play_again():
     answer = input(STRINGS_DICTIONARY.play_again)
