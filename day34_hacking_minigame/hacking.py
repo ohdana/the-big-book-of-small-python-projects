@@ -32,38 +32,18 @@ def play():
         if not GAME_OVER and ran_out_of_tries():
             out_of_tries(password)
             break
-        #print(STRINGS_DICTIONARY.enter_password.format(tries_left))
-        #user_input = input(STRINGS_DICTIONARY.input)
-        #if user_input.upper() == password.upper():
-        #    access_granted()
-        #    game_over = True
-        #    break
-        #n_of_correct_chars = get_n_of_correct_chars(password, user_input)
-        #access_denied(n_of_correct_chars, len(password))
-        #tries_left -= 1
-        #if tries_left == 0:
-        #    out_of_tries(password)
-        #    game_over = True
 
 def try_guess_password(password):
     user_input = get_user_input()
     set_tries(TRIES_LEFT - 1)
     if guessed_password(user_input, password):
         access_granted()
-        return
-    n_of_correct_chars = get_n_of_correct_chars(password, user_input)
-    access_denied(n_of_correct_chars, len(password))
-
-def set_tries(value):
-    global TRIES_LEFT
-    TRIES_LEFT = value
+    else:
+        n_of_correct_chars = get_n_of_correct_chars(password, user_input)
+        access_denied(n_of_correct_chars, len(password))
 
 def ran_out_of_tries():
     return TRIES_LEFT <= 0
-
-def set_game_over(value):
-    global GAME_OVER
-    GAME_OVER = value
 
 def game_over():
     set_game_over(True)
@@ -92,18 +72,6 @@ def allocate_password_randomly(password, password_options):
     random_index = random.randint(0, len(password_options) - 1)
     password_options[0], password_options[random_index] = password_options[random_index], password_options[0]
 
-def get_n_of_correct_chars(password, user_input):
-    counter = 0
-    if len(user_input) != len(password):
-        print(STRINGS_DICTIONARY.password_length.format(len(password)))
-        return counter
-
-    for i in range(len(password)):
-        if password[i] == user_input[i]:
-            counter += 1
-
-    return counter
-
 def generate_password_options(password_length):
     words = load_words(password_length)
     password = random.choice(words)
@@ -113,7 +81,6 @@ def generate_password_options(password_length):
         option = find_option(words, password)
         if option in password_options:
             continue
-
         password_options.append(option)
         n_of_options -= 1
 
@@ -122,14 +89,13 @@ def generate_password_options(password_length):
 def find_option(words, password):
     n_of_words = len(words)
     option = None
-    indices = [i for i in range(len(password))]
-    random_start_index = random.randint(0, n_of_words)
-    pointer = random_start_index
-    while pointer < len(words):
-        if can_be_option(words[pointer], password):
-            option = words[pointer]
+    index = random.randint(0, n_of_words)
+    while index < len(words):
+        word = words[index]
+        if can_be_option(word, password):
+            option = word
             break
-        pointer += 1
+        index += 1
 
     if not option:
         return find_option(words, password)
@@ -196,8 +162,20 @@ def access_denied(n_of_correct_chars, total_n_of_chars):
     print(STRINGS_DICTIONARY.access_denied.format(n_of_correct_chars, total_n_of_chars))
 
 def out_of_tries(password):
-    print(STRINGS_DICTIONARY.out_of_tries.format(password))
+    print(STRINGS_DICTIONARY.out_of_tries.format(password.upper()))
     game_over()
+
+def get_n_of_correct_chars(password, user_input):
+    counter = 0
+    if len(user_input) != len(password):
+        print(STRINGS_DICTIONARY.password_length.format(len(password)))
+        return counter
+
+    for i in range(len(password)):
+        if password[i] == user_input[i]:
+            counter += 1
+
+    return counter
 
 def ask_if_play_again():
     answer = input(STRINGS_DICTIONARY.play_again)
@@ -208,6 +186,14 @@ def ask_if_play_again():
 
 def is_valid_y_n(answer):
     return answer.upper() in [YES, NO]
+
+def set_game_over(value):
+    global GAME_OVER
+    GAME_OVER = value
+
+def set_tries(value):
+    global TRIES_LEFT
+    TRIES_LEFT = value
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
