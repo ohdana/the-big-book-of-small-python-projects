@@ -4,6 +4,7 @@ GAME_OVER = None
 WORD_SKELETON_CHAR = '_'
 GAP_CHAR = ' '
 YES, NO = 'Y', 'N'
+TRIES_LEFT = None
 CATEGORY_WORDS_MAP = { 'Animals': 'ANT BABOON BADGER BAT BEAR BEAVER CAMEL CAT CLAM COBRA COUGAR COYOTE CROW DEER DOG DONKEY DUCK EAGLE FERRET FOX FROG GOAT GOOSE HAWK LION LIZARD LLAMA MOLE MONKEY MOOSE MOUSE MULE NEWT OTTER OWL PANDA PARROT PIGEON PYTHON RABBIT RAM RAT RAVEN RHINO SALMON SEAL SHARK SHEEP SKUNK SLOTH SNAKE SPIDER STORK SWAN TIGER TOAD TROUT TURKEY TURTLE WEASEL WHALE WOLF WOMBAT ZEBRA'.split()}
 
 def main():
@@ -18,37 +19,21 @@ def main():
 
 def play():
     reset_game()
-    category = get_category()
-    word = get_secret_word(category)
-    word_skeleton = generate_word_skeleton(word)
-    tries_left = get_initial_n_of_tries()
+    word, word_skeleton = get_secret_word()
     missed_letters = []
-    show_word_skeleton(word_skeleton)
     while not GAME_OVER:
-        letter = take_guess(word, word_skeleton, missed_letters)
-        if letter in word:
-            word_skeleton = update_word_skeleton(letter, word, word_skeleton)
-            if WORD_SKELETON_CHAR not in word_skeleton:
-                player_wins(word)
-                break
-        else:
-            tries_left -= 1
-            if letter not in missed_letters:
-                missed_letters.append(letter)
-
         show_missed_letters(missed_letters)
         show_word_skeleton(word_skeleton)
         show_hangman(len(missed_letters))
-        if ran_out_of_tries(tries_left):
+        letter = take_guess(word, word_skeleton, missed_letters)
+        if letter in word:
+            guessed_successfully(letter, word, word_skeleton)
+        else:
+            guessed_wrong(letter, missed_letters)
+
+        if ran_out_of_tries():
             player_lost(word)
             break
-
-def show_missed_letters(missed_letters):
-    if not missed_letters:
-        print(STRINGS_DICTIONARY.no_missed_letters)
-    else:
-        missed_letters_string = ', '.join(missed_letters)
-        print(STRINGS_DICTIONARY.missed_letters.format(missed_letters_string))
 
 def player_wins(word):
     print(STRINGS_DICTIONARY.you_won.format(word))
@@ -58,6 +43,22 @@ def player_lost(word):
     print(STRINGS_DICTIONARY.you_lost.format(word))
     game_over()
 
+def guessed_wrong(letter, missed_letters):
+    set_tries_left(TRIES_LEFT - 1)
+    if letter not in missed_letters:
+        missed_letters.append(letter)
+
+def guessed_successfully(letter, word, word_skeleton):
+    word_skeleton = update_word_skeleton(letter, word, word_skeleton)
+    if guessed_all_letters(word_skeleton):
+        player_wins(word)
+
+def guessed_all_letters(word_skeleton):
+    return WORD_SKELETON_CHAR not in word_skeleton
+
+def ran_out_of_tries():
+    return TRIES_LEFT <= 0
+
 def update_word_skeleton(letter, word, word_skeleton):
     for i in range(len(word)):
         if word[i] == letter:
@@ -65,31 +66,37 @@ def update_word_skeleton(letter, word, word_skeleton):
 
     return word_skeleton
 
+def show_missed_letters(missed_letters):
+    if not missed_letters:
+        print(STRINGS_DICTIONARY.no_missed_letters)
+    else:
+        missed_letters_string = ', '.join(missed_letters)
+        print(STRINGS_DICTIONARY.missed_letters.format(missed_letters_string))
+
 def show_word_skeleton(word_skeleton):
     print('''
     {}'''.format(GAP_CHAR.join(word_skeleton)))
-
-def generate_word_skeleton(word):
-    return [WORD_SKELETON_CHAR for i in range(len(word))]
-
-def ran_out_of_tries(tries_left):
-    return tries_left <= 0
 
 def show_hangman(n_of_missed_letters):
     print(STRINGS_DICTIONARY.hangman_stages[n_of_missed_letters])
 
 def get_initial_n_of_tries():
-    return len(STRINGS_DICTIONARY.hangman_stages)
+    return len(STRINGS_DICTIONARY.hangman_stages) - 1
 
 def take_guess(word, word_skeleton, missed_letters):
     letter = get_user_input()
     return letter.upper()
 
+def generate_word_skeleton(word):
+    return [WORD_SKELETON_CHAR for i in range(len(word))]
+
 def get_category():
     return random.choice(list(CATEGORY_WORDS_MAP))
 
-def get_secret_word(category):
-    return random.choice(CATEGORY_WORDS_MAP[category])
+def get_secret_word():
+    category = get_category()
+    word = random.choice(CATEGORY_WORDS_MAP[category])
+    return word, generate_word_skeleton(word)
 
 def get_user_input():
     print(STRINGS_DICTIONARY.guess_letter)
@@ -110,6 +117,11 @@ def game_over():
 
 def reset_game():
     set_game_over(False)
+    set_tries_left(get_initial_n_of_tries())
+
+def set_tries_left(value):
+    global TRIES_LEFT
+    TRIES_LEFT = value
 
 def ask_if_play_again():
     answer = input(STRINGS_DICTIONARY.play_again)
