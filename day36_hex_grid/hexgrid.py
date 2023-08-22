@@ -8,7 +8,7 @@ BACK_SLASH_CHAR = '\\'
 def main():
     init()
     show_intro_message()
-    show_grid(2)
+    show_grid(5)
 
 def show_grid(scale=1):
     for y in range(Y_REPEAT):
@@ -24,10 +24,10 @@ def get_hex_cell(scale):
     bottom = []
     horizontal_line = HORIZONTAL_CHAR * scale
     for i in range(scale):
-        top_line = (scale - 1 - i) * GAP_CHAR + SLASH_CHAR + (scale + i * 2) * GAP_CHAR + BACK_SLASH_CHAR + (scale - 1 - i) * GAP_CHAR + scale * GAP_CHAR
+        top_line = (scale - i - 1) * GAP_CHAR + SLASH_CHAR + (scale + i * 2) * GAP_CHAR + BACK_SLASH_CHAR + (scale + (scale - i - 1)) * GAP_CHAR
         bottom_line = i * GAP_CHAR + BACK_SLASH_CHAR + (scale + (scale - i - 1) * 2) * GAP_CHAR + SLASH_CHAR + (scale + i) * GAP_CHAR
         if i == (scale - 1):
-            top_line = SLASH_CHAR + GAP_CHAR * (scale + i * 2) + BACK_SLASH_CHAR + HORIZONTAL_CHAR * scale
+            top_line = SLASH_CHAR + (scale + i * 2) * GAP_CHAR + BACK_SLASH_CHAR + horizontal_line
             bottom_line = i * GAP_CHAR + BACK_SLASH_CHAR + horizontal_line + SLASH_CHAR + i * GAP_CHAR + scale * GAP_CHAR
         top.append(top_line)
         bottom.append(bottom_line)
