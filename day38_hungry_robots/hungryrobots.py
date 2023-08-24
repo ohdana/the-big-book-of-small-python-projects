@@ -1,4 +1,10 @@
+GAME_OVER = None
 YES, NO = 'Y', 'N'
+Q, W, E, D, C, X, A, T = 'Q', 'W', 'E', 'D', 'C', 'X', 'A', 'T'
+QUIT = 'QUIT'
+INITIAL_NUM_ROBOTS = 10
+INITIAL_NUM_TELEPORTS = 2
+INITIAL_NUM_DEAD_ROBOTS = 2
 
 def main():
     init()
@@ -11,7 +17,22 @@ def main():
     say_bye()
 
 def play():
-    pass
+    reset_game()
+
+def reset_game():
+    while not GAME_OVER:
+        pass
+
+def player_wins():
+    print(STRINGS_DICTIONARY.you_won)
+    game_over()
+
+def player_lost():
+    print(STRINGS_DICTIONARY.you_lost)
+    game_over()
+
+def game_over():
+    set_game_over(True)
 
 def ask_if_play_again():
     answer = input(STRINGS_DICTIONARY.play_again)
@@ -59,15 +80,20 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.play_again = '''
     Play again? y/n: '''
     STRINGS_DICTIONARY.enter_move = '''
-                        (Q) (W) ( )
-                        (A) (S) (D)
-    Enter move or QUIT: (Z) (X) ( )'''
+                        ({}) ({}) ({})
+                        ({}) ({}) ({})
+    Enter move or QUIT: ({}) ({}) ({})'''
     STRINGS_DICTIONARY.teleports_remaining = '''
     (T)eleports remaining: {}'''
     STRINGS_DICTIONARY.input = '''
     >'''
     STRINGS_DICTIONARY.press_enter = '''
     Press Enter to begin...'''
+    STRINGS_DICTIONARY.you_won = '''
+    All the robots have crashed into each other and you
+    lived to tell the tale! Good job!'''
+    STRINGS_DICTIONARY.you_lost = '''
+    You have been caught by a robot!'''
 
 class StringsDictionary:
     pass
