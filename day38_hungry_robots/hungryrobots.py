@@ -2,7 +2,8 @@ from canvas import Canvas
 
 GAME_OVER = None
 YES, NO = 'Y', 'N'
-Q, W, E, D, C, X, A, T = 'Q', 'W', 'E', 'D', 'C', 'X', 'A', 'T'
+Q, W, E, D, C, X, A, Z = 'Q', 'W', 'E', 'D', 'C', 'X', 'A', 'Z'
+DIRECTIONS = [Q, W, E, D, C, X, A, Z]
 QUIT = 'QUIT'
 INITIAL_NUM_ALIVE_ROBOTS = 10
 INITIAL_NUM_DEAD_ROBOTS = 2
@@ -84,7 +85,7 @@ def init_strings_dictionary():
     Play again? y/n: '''
     STRINGS_DICTIONARY.enter_move = '''
                         ({}) ({}) ({})
-                        ({}) ({}) ({})
+                        ({}) (S) ({})
     Enter move or QUIT: ({}) ({}) ({})'''
     STRINGS_DICTIONARY.teleports_remaining = '''
     (T)eleports remaining: {}'''
