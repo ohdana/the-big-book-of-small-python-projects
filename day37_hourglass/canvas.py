@@ -11,7 +11,6 @@ class Hourglass:
         self.middle_x = self.width // 2
         self.canvas = self.get_initial_hourglass()
         self.height = self.get_height()
-        self.bottleneck_x, self.bottleneck_y = self.get_bottleneck_coords()
         self.sand = []
         self.hourglass_outline = []
         self.init_sand()
@@ -22,33 +21,6 @@ class Hourglass:
         bottom = self.get_empty_bottom_half()
 
         return self.get_hourglass(top, bottom)
-
-    def get_bottleneck_coords(self):
-        y = self.height // 2
-        x = self.width // 2
-
-        return y, x
-
-    def all_sands_dropped(self):
-        return all([self.is_in_bottom_half(sand) for sand in self.sand])
-
-    def is_in_bottom_half(self, sand):
-        y, x = sand
-        return y > self.height // 2
-
-    def draw_canvas(self):
-        result = ''
-        for i in range(self.height):
-            line = ''
-            for j in range(self.width):
-                char = GAP_CHAR
-                if (i, j) in self.hourglass_outline:
-                    char = WALL_CHAR
-                elif (i, j) in self.sand:
-                    char = SAND_CHAR
-                line += char
-            result += '\n' + line
-        print(result)
 
     def get_compiled_canvas(self):
         result = []
@@ -65,9 +37,6 @@ class Hourglass:
 
         return result
 
-    def get_sand_to_drop_coords(self):
-        return get_bottleneck_coords()
-
     def get_hourglass(self, top_half, bottom_half):
         return top_half + bottom_half[1:]
 
@@ -79,9 +48,6 @@ class Hourglass:
 
     def get_full_top_half(self):
         return self.generate_full_half()
-
-    def get_full_bottom_half(self):
-        return list(reversed(self.generate_full_half()))
 
     def init_sand(self):
         sand = []
@@ -134,130 +100,11 @@ class Hourglass:
         lines = [''.join(line) for line in self.get_canvas()]
         print('\n'.join(lines))
 
-    def tick(self):
-        bottleneck_coords = self.get_bottleneck_coords()
-        bottleneck_coord_y, bottleneck_coord_x = bottleneck_coords
-
-        if (bottleneck_coord_y, bottleneck_coord_x) in self.sand:
-            self.tick_top_middle_sand((bottleneck_coord_y, bottleneck_coord_x))
-
-        top_half_sand = []
-        bottom_half_sand = []
-        for sand in self.sand:
-            y, x = sand
-            if y < bottleneck_coord_y:
-                top_half_sand.append(sand)
-            else:
-                bottom_half_sand.append(sand)
-        self.tick_top_half(top_half_sand)
-        self.tick_bottom_half(bottom_half_sand)
-
-    def tick_bottleneck_sand(self):
-        pass
-
-    def tick_top_half(self, top_half_sand):
-        top_half_sand.sort()
-        for sand in top_half_sand:
-            y, x = sand
-            if x < self.middle_x:
-                self.tick_top_sand_down_right(sand)
-            elif x > self.middle_x:
-                self.tick_top_sand_down_left(sand)
-            else:
-                self.tick_top_middle_sand(sand)
-            self.update_canvas()
-
-    def tick_bottom_half(self, bottom_half_sand):
-        bottom_half_sand.sort()
-        for sand in bottom_half_sand:
-            y, x = sand
-            if x < self.middle_x:
-                self.tick_bottom_sand_down_left(sand)
-            elif x > self.middle_x:
-                self.tick_bottom_sand_down_right(sand)
-            else:
-                self.tick_bottom_sand(sand)
-            self.update_canvas()
-
-    def update_canvas(self):
-        self.canvas = self.get_compiled_canvas()
-
-    def tick_top_sand_down_right(self, sand):
-        y, x = sand
-        bottom_neighbour_x, bottom_neighbour_y = x, y + 1
-        bottom_neighbour = self.canvas[bottom_neighbour_y][bottom_neighbour_x]
-        bottom_right_neighbour_x, bottom_right_neighbour_y = x + 1, y + 1
-        bottom_right_neighbour = self.canvas[bottom_right_neighbour_y][bottom_right_neighbour_x]
-
-        if self.is_empty_cell(bottom_neighbour_x, bottom_neighbour_y):
-            self.update_sand_coords(sand, bottom_neighbour_x, bottom_neighbour_y)
-        elif self.is_empty_cell(bottom_right_neighbour_x, bottom_right_neighbour_y):
-            self.update_sand_coords(sand, bottom_right_neighbour_x, bottom_right_neighbour_y)
-
-    def tick_top_sand_down_left(self, sand):
-        y, x = sand
-        bottom_neighbour_x, bottom_neighbour_y = x, y + 1
-        bottom_neighbour = self.canvas[bottom_neighbour_y][bottom_neighbour_x]
-        bottom_left_neighbour_x, bottom_left_neighbour_y = x - 1, y + 1
-        bottom_left_neighbour = self.canvas[bottom_left_neighbour_y][bottom_left_neighbour_x]
-
-        if self.is_empty_cell(bottom_neighbour_x, bottom_neighbour_y):
-            self.update_sand_coords(sand, bottom_neighbour_x, bottom_neighbour_y)
-        elif self.is_empty_cell(bottom_left_neighbour_x, bottom_left_neighbour_y):
-            self.update_sand_coords(sand, bottom_left_neighbour_x, bottom_left_neighbour_y)
-
-    def tick_top_middle_sand(self, sand):
-        y, x = sand
-        bottom_neighbour_x, bottom_neighbour_y = x, y + 1
-        bottom_neighbour = self.canvas[bottom_neighbour_y][bottom_neighbour_x]
-        if bottom_neighbour is GAP_CHAR:
-            self.update_sand_coords(sand, x, y + 1)
-
-    def tick_bottom_sand_down_right(self, sand):
-        y, x = sand
-        bottom_neighbour_x, bottom_neighbour_y = x, y + 1
-        bottom_neighbour = self.canvas[bottom_neighbour_y][bottom_neighbour_x]
-        bottom_right_neighbour_x, bottom_right_neighbour_y = x + 1, y + 1
-        bottom_right_neighbour = self.canvas[bottom_right_neighbour_y][bottom_right_neighbour_x]
-
-        if self.is_empty_cell(bottom_neighbour_x, bottom_neighbour_y):
-            self.update_sand_coords(sand, bottom_neighbour_x, bottom_neighbour_y)
-        elif self.is_empty_cell(bottom_right_neighbour_x, bottom_right_neighbour_y):
-            self.update_sand_coords(sand, bottom_right_neighbour_x, bottom_right_neighbour_y)
-
-    def tick_bottom_sand_down_left(self, sand):
-        y, x = sand
-        bottom_neighbour_x, bottom_neighbour_y = x, y + 1
-        bottom_neighbour = self.canvas[bottom_neighbour_y][bottom_neighbour_x]
-        bottom_left_neighbour_x, bottom_left_neighbour_y = x - 1, y + 1
-        bottom_left_neighbour = self.canvas[bottom_left_neighbour_y][bottom_left_neighbour_x]
-
-        if self.is_empty_cell(bottom_neighbour_x, bottom_neighbour_y):
-            self.update_sand_coords(sand, bottom_neighbour_x, bottom_neighbour_y)
-        elif self.is_empty_cell(bottom_left_neighbour_x, bottom_left_neighbour_y):
-            self.update_sand_coords(sand, bottom_left_neighbour_x, bottom_left_neighbour_y)
-
-    def tick_bottom_sand(self, sand):
-        y, x = sand
-        bottom_neighbour_x, bottom_neighbour_y = x, y + 1
-        bottom_neighbour = self.canvas[bottom_neighbour_y][bottom_neighbour_x]
-        if bottom_neighbour is GAP_CHAR:
-            self.update_sand_coords(sand, x, y + 1)
-            return
-        elif bottom_neighbour is WALL_CHAR:
-            return
-        if self.has_left_right_neighbours(bottom_neighbour_x, bottom_neighbour_y):
-            return
-        fall_right = random.randint(1, 2) % 2 == 0
-        if fall_right:
-            if self.is_empty_cell(x + 1, y + 1):
-                self.update_sand_coords(sand, x + 1, y + 1)
-        else:
-            if self.is_empty_cell(x - 1, y + 1):
-                self.update_sand_coords(sand, x - 1, y + 1)
-
     def is_empty_cell(self, x, y):
         return self.canvas[y][x] == GAP_CHAR
+
+    def is_wall_char(self, x, y):
+        return self.canvas[y][x] == WALL_CHAR
 
     def update_sand_coords(self, sand, x, y):
         index = self.sand.index(sand)
@@ -269,8 +116,48 @@ class Hourglass:
 
         return has_left_neighbour or has_right_neighbour
 
-#hourglass = Hourglass()
-#while True:
-#    hourglass.show_canvas()
-#    hourglass.tick()
-#    time.sleep(0.1)
+    def tick(self):
+        for sand in self.sand:
+            self.tick_sand(sand)
+        random.shuffle(self.sand)
+
+    def tick_sand(self, sand):
+        y, x = sand
+        new_x, new_y = x, y
+        if self.check_if_can_fall_down(x, y):
+            new_x, new_y = x, y + 1
+        else:
+            can_fall_down_left = self.check_if_can_fall_down_left(x, y)
+            can_fall_down_right = self.check_if_can_fall_down_right(x, y)
+            if can_fall_down_left and can_fall_down_right:
+                direction = random.choice([-1, 1])
+                new_x, new_y = x + direction, y + 1
+            elif can_fall_down_left:
+                new_x, new_y = x - 1, y + 1
+            elif can_fall_down_right:
+                new_x, new_y = x + 1, y + 1
+        self.update_sand_coords(sand, new_x, new_y)
+        self.update_canvas()
+
+    def check_if_can_fall_down(self, x, y):
+        bottom_neighbour_x, bottom_neighbour_y = x, y + 1
+        return self.is_empty_cell(bottom_neighbour_x, bottom_neighbour_y)
+
+    def check_if_can_fall_down_left(self, x, y):
+        left_neighbour_x, left_neighbour_y = x - 1, y
+        is_wall_down_left = self.is_wall_char(left_neighbour_x, left_neighbour_y)
+        if is_wall_down_left:
+            return False
+        bottom_left_neighbour_x, bottom_left_neighbour_y = x - 1, y + 1
+        return self.is_empty_cell(bottom_left_neighbour_x, bottom_left_neighbour_y)
+
+    def check_if_can_fall_down_right(self, x, y):
+        right_neighbour_x, right_neighbour_y = x + 1, y
+        is_wall_down_right = self.is_wall_char(right_neighbour_x, right_neighbour_y)
+        if is_wall_down_right:
+            return False
+        bottom_right_neighbour_x, bottom_right_neighbour_y = x + 1, y + 1
+        return self.is_empty_cell(bottom_right_neighbour_x, bottom_right_neighbour_y)
+
+    def update_canvas(self):
+        self.canvas = self.get_compiled_canvas()

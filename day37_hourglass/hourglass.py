@@ -1,7 +1,7 @@
 from canvas import Hourglass
 import random, time
 
-SLEEP_DURATION = 0.1
+SLEEP_DURATION = 0.3
 
 def main():
     init()
