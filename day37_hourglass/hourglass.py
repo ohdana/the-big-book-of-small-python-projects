@@ -1,12 +1,19 @@
+from canvas import Hourglass
 import random, time
 
-CANVAS_WIDTH = 100
-CANVAS_HEIGHT = 50
-SLEEP_DURATION = 0.5
+SLEEP_DURATION = 0.1
 
 def main():
     init()
     show_intro_message()
+    simulate()
+
+def simulate():
+    hourglass = Hourglass()
+    while True:
+        hourglass.show_canvas()
+        hourglass.tick()
+        time.sleep(SLEEP_DURATION)
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
