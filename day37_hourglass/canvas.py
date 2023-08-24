@@ -8,13 +8,23 @@ WIDTH = 19
 class Hourglass:
     def __init__(self):
         self.width = WIDTH
-        self.middle_x = self.width // 2
+        self.init_hourglass()
+
+    def init_hourglass(self):
         self.canvas = self.get_initial_hourglass()
-        self.height = self.get_height()
-        self.sand = []
-        self.hourglass_outline = []
-        self.init_sand()
-        self.init_outline_coords()
+        self.height = len(self.canvas)
+        self.sand, self.hourglass_outline = [], []
+        for i in range(self.height):
+            for j in range(self.width):
+                if self.canvas[i][j] == SAND_CHAR:
+                    self.sand.append((i, j))
+                elif self.canvas[i][j] == WALL_CHAR:
+                    self.hourglass_outline.append((i, j))
+
+    def tick(self):
+        for sand in self.sand:
+            self.tick_sand(sand)
+        random.shuffle(self.sand)
 
     def get_initial_hourglass(self):
         top = self.get_full_top_half()
@@ -43,28 +53,17 @@ class Hourglass:
     def get_empty_top_half(self):
         return self.generate_empty_half()
 
-    def get_empty_bottom_half(self):
-        return list(reversed(self.get_empty_top_half()))
-
-    def get_full_top_half(self):
-        return self.generate_full_half()
-
-    def init_sand(self):
         sand = []
         for i in range(self.height):
             for j in range(self.width):
                 if self.canvas[i][j] == SAND_CHAR:
                     sand.append((i, j))
         self.sand = sand
+    def get_empty_bottom_half(self):
+        return list(reversed(self.get_empty_top_half()))
 
-    def init_outline_coords(self):
-        outline = []
-        for i in range(self.height):
-            for j in range(self.width):
-                if self.canvas[i][j] == WALL_CHAR:
-                    outline.append((i, j))
-
-        self.hourglass_outline = outline
+    def get_full_top_half(self):
+        return self.generate_full_half()
 
     def generate_full_half(self):
         full_top_half = [WIDTH * [WALL_CHAR]]
@@ -90,36 +89,22 @@ class Hourglass:
 
         return empty_top_half
 
-    def get_height(self):
-        return len(self.get_canvas())
-
-    def get_canvas(self):
-        return self.canvas
-
     def show_canvas(self):
-        lines = [''.join(line) for line in self.get_canvas()]
+        lines = [''.join(line) for line in self.canvas]
         print('\n'.join(lines))
+
+    def update_canvas(self):
+        self.canvas = self.get_compiled_canvas()
+
+    def update_sand_coords(self, sand, x, y):
+        index = self.sand.index(sand)
+        self.sand[index] = (y, x)
 
     def is_empty_cell(self, x, y):
         return self.canvas[y][x] == GAP_CHAR
 
     def is_wall_char(self, x, y):
         return self.canvas[y][x] == WALL_CHAR
-
-    def update_sand_coords(self, sand, x, y):
-        index = self.sand.index(sand)
-        self.sand[index] = (y, x)
-
-    def has_left_right_neighbours(self, x, y):
-        has_left_neighbour = self.canvas[y][x - 1] is not GAP_CHAR
-        has_right_neighbour = self.canvas[y][x + 1] is not GAP_CHAR
-
-        return has_left_neighbour or has_right_neighbour
-
-    def tick(self):
-        for sand in self.sand:
-            self.tick_sand(sand)
-        random.shuffle(self.sand)
 
     def tick_sand(self, sand):
         y, x = sand
@@ -158,6 +143,3 @@ class Hourglass:
             return False
         bottom_right_neighbour_x, bottom_right_neighbour_y = x + 1, y + 1
         return self.is_empty_cell(bottom_right_neighbour_x, bottom_right_neighbour_y)
-
-    def update_canvas(self):
-        self.canvas = self.get_compiled_canvas()
