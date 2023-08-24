@@ -21,6 +21,7 @@ class Canvas:
         self.n_of_alive_robots = n_of_alive_robots
         self.n_of_dead_robots = n_of_dead_robots
         self.n_of_teleport = n_of_teleport
+        self.player_eaten = False
         self.allocate_objects()
         self.init_calculate_coords_map()
 
@@ -31,8 +32,25 @@ class Canvas:
         self.allocate_robots()
         self.allocate_player()
 
-    def is_eaten_player(self):
+    def get_player_available_directions(self):
+        x, y = self.player
+        return self.get_available_directions(x, y)
+
+    def get_available_directions(self, x, y):
+        direction_coords_map = {}
+        for direction in DIRECTIONS:
+            new_x, new_y = CALCULATE_COORDS_MAP[direction](x, y)
+            if self.is_wall(new_x, new_y):
+                continue
+            direction_coords_map[direction] = (new_x, new_y)
+
+        return direction_coords_map
+
+    def is_player_eaten(self):
         return self.player_eaten
+
+    def are_all_robots_dead(self):
+        return len(self.alive_robots) == 0
 
     def move_robots(self):
         for robot in self.alive_robots:
@@ -52,10 +70,9 @@ class Canvas:
     def choose_robot_direction(self, robot):
         x, y = robot
         direction_distance_map = {}
-        for direction in DIRECTIONS:
-            new_x, new_y = CALCULATE_COORDS_MAP[direction](x, y)
-            if self.is_wall(new_x, new_y):
-                continue
+        available_directions = self.get_available_directions(x, y)
+        for direction in available_directions.keys():
+            new_x, new_y = available_directions[direction]
             direction_distance_map[direction] = self.get_crowfly_distance_to_player(new_x, new_y)
 
         return self.get_min_value_key(direction_distance_map)
@@ -77,7 +94,12 @@ class Canvas:
         if self.is_empty(new_x, new_y):
             self.player = (new_x, new_y)
 
+    def get_n_of_teleport(self):
+        return self.n_of_teleport
+
     def teleport(self):
+        if self.n_of_teleport < 1:
+            return
         new_x, new_y = self.get_random_empty_cell()
         self.player = (new_x, new_y)
         self.n_of_teleport -= 1
@@ -196,8 +218,8 @@ class Canvas:
     def z(self, x, y):
         return x - 1, y + 1
 
-canvas = Canvas(INITIAL_NUM_ALIVE_ROBOTS, INITIAL_NUM_DEAD_ROBOTS, INITIAL_NUM_TELEPORTS)
-while True:
-    canvas.show_canvas()
-    canvas.move_robots()
-    time.sleep(0.5)
+#canvas = Canvas(INITIAL_NUM_ALIVE_ROBOTS, INITIAL_NUM_DEAD_ROBOTS, INITIAL_NUM_TELEPORTS)
+#while True:
+#    canvas.show_canvas()
+#    canvas.move_robots()
+#    time.sleep(0.5)

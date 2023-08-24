@@ -2,8 +2,8 @@ from canvas import Canvas
 
 GAME_OVER = None
 YES, NO = 'Y', 'N'
-Q, W, E, D, C, X, A, Z = 'Q', 'W', 'E', 'D', 'C', 'X', 'A', 'Z'
-DIRECTIONS = [Q, W, E, D, C, X, A, Z]
+Q, W, E, D, C, X, A, Z, TELEPORT = 'Q', 'W', 'E', 'D', 'C', 'X', 'A', 'Z', 'T'
+DIRECTIONS = [Q, W, E, A, D, Z, X, C]
 QUIT = 'QUIT'
 INITIAL_NUM_ALIVE_ROBOTS = 10
 INITIAL_NUM_DEAD_ROBOTS = 2
@@ -21,17 +21,69 @@ def main():
 
 def play():
     reset_game()
-
-def reset_game():
     canvas = Canvas(INITIAL_NUM_ALIVE_ROBOTS, INITIAL_NUM_DEAD_ROBOTS, INITIAL_NUM_TELEPORTS)
     while not GAME_OVER:
-        pass
+        canvas.show_canvas()
+        make_player_move(canvas)
+        make_robots_move(canvas)
+
+        if GAME_OVER:
+            break
+
+def make_player_move(canvas):
+    user_input = get_user_input(canvas)
+    if user_input == QUIT:
+        game_over()
+    elif user_input == TELEPORT:
+        teleport(canvas)
+    else:
+        canvas.move_player(user_input)
+
+def make_robots_move(canvas):
+    canvas.move_robots()
+    if canvas.is_player_eaten():
+        player_lost()
+    elif canvas.are_all_robots_dead():
+        player_wins()
+
+def teleport(canvas):
+    canvas.teleport()
+
+def get_user_input(canvas):
+    available_directions = get_player_available_directions(canvas)
+    print(STRINGS_DICTIONARY.enter_move.format(*available_directions))
+    print(STRINGS_DICTIONARY.teleports_remaining.format(canvas.get_n_of_teleport()))
+    user_input = input(STRINGS_DICTIONARY.input)
+    if not is_valid_user_input(user_input, available_directions):
+        return get_user_input(canvas)
+
+    return user_input.upper()
+
+def get_player_available_directions(canvas):
+    available_directions = canvas.get_player_available_directions()
+    ordered_directions = []
+    for direction in DIRECTIONS:
+        if direction in available_directions:
+            ordered_directions.append(direction)
+        else:
+            ordered_directions.append(' ')
+
+    return ordered_directions
+
+def is_valid_user_input(user_input, available_directions):
+    valid_inputs = DIRECTIONS + [QUIT] + [TELEPORT]
+    return user_input.upper() in valid_inputs
+
+def reset_game():
+    pass
 
 def player_wins():
+    canvas.show_canvas()
     print(STRINGS_DICTIONARY.you_won)
     game_over()
 
 def player_lost():
+    canvas.show_canvas()
     print(STRINGS_DICTIONARY.you_lost)
     game_over()
 
