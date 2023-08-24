@@ -1,10 +1,12 @@
+from canvas import Canvas
+
 GAME_OVER = None
 YES, NO = 'Y', 'N'
 Q, W, E, D, C, X, A, T = 'Q', 'W', 'E', 'D', 'C', 'X', 'A', 'T'
 QUIT = 'QUIT'
-INITIAL_NUM_ROBOTS = 10
-INITIAL_NUM_TELEPORTS = 2
+INITIAL_NUM_ALIVE_ROBOTS = 10
 INITIAL_NUM_DEAD_ROBOTS = 2
+INITIAL_NUM_TELEPORTS = 2
 
 def main():
     init()
@@ -20,6 +22,7 @@ def play():
     reset_game()
 
 def reset_game():
+    canvas = Canvas(INITIAL_NUM_ALIVE_ROBOTS, INITIAL_NUM_DEAD_ROBOTS, INITIAL_NUM_TELEPORTS)
     while not GAME_OVER:
         pass
 
