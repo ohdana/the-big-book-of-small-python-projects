@@ -59,6 +59,7 @@ class Hourglass:
                 if self.canvas[i][j] == SAND_CHAR:
                     sand.append((i, j))
         self.sand = sand
+
     def get_empty_bottom_half(self):
         return list(reversed(self.get_empty_top_half()))
 
