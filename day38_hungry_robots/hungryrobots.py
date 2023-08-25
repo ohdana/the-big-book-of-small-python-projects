@@ -26,24 +26,23 @@ def play():
         make_player_move(canvas)
         make_robots_move(canvas)
 
-        if GAME_OVER:
-            break
-
 def make_player_move(canvas):
     user_input = get_user_input(canvas)
     if user_input == QUIT:
         game_over()
     elif user_input == TELEPORT:
         teleport(canvas)
+    elif user_input not in canvas.get_player_available_directions():
+        make_player_move(canvas)
     else:
         canvas.move_player(user_input)
 
 def make_robots_move(canvas):
     canvas.move_robots()
     if canvas.is_player_eaten():
-        player_lost()
+        player_lost(canvas)
     elif canvas.are_all_robots_dead():
-        player_wins()
+        player_wins(canvas)
 
 def teleport(canvas):
     canvas.teleport()
@@ -73,12 +72,12 @@ def is_valid_user_input(user_input, available_directions):
     valid_inputs = DIRECTIONS + [QUIT] + [TELEPORT]
     return user_input.upper() in valid_inputs
 
-def player_wins():
+def player_wins(canvas):
     canvas.show_canvas()
     print(STRINGS_DICTIONARY.you_won)
     game_over()
 
-def player_lost():
+def player_lost(canvas):
     canvas.show_canvas()
     print(STRINGS_DICTIONARY.you_lost)
     game_over()

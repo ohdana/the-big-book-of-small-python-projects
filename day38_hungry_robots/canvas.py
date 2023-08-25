@@ -62,6 +62,7 @@ class Canvas:
         new_robot_coords = CALCULATE_COORDS_MAP[direction](*robot)
         if self.is_robot(*new_robot_coords):
             self.crash_robot(robot)
+            self.crash_robot(new_robot_coords)
             return
         elif self.is_player(*new_robot_coords):
             self.player_eaten = True
@@ -122,12 +123,12 @@ class Canvas:
         return (x, y) == self.player
 
     def get_char(self, x, y):
-        if (x, y) == self.player:
-            return PLAYER_CHAR
-        elif (x, y) in self.alive_robots:
+        if (x, y) in self.alive_robots:
             return ROBOT_CHAR
         elif (x, y) in self.dead_robots:
             return DEAD_ROBOT_CHAR
+        elif (x, y) == self.player:
+            return PLAYER_CHAR
         elif (x, y) in self.walls:
             return WALL_CHAR
         else:
