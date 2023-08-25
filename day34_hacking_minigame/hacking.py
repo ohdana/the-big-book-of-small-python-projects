@@ -129,7 +129,7 @@ def generate_computer_memory(password_options):
 def pollute_password_options(password_options):
     result = []
     prefix_dec = random.randint(MIN_MEMORY_ADDRESS_DEC, MAX_MEMORY_ADDRESS_DEC)
-    options_indices_in_result = random.choices(range(MAX_MEMORY_CELLS_TO_DISPLAY), k=len(password_options))
+    options_indices_in_result = get_random_indices(MAX_MEMORY_CELLS_TO_DISPLAY, len(password_options))
     cell_length = generate_cell_content_length(password_options[0])
     for i in range(MAX_MEMORY_CELLS_TO_DISPLAY):
         cell_contents = generate_garbage_string(cell_length)
@@ -140,6 +140,15 @@ def pollute_password_options(password_options):
         prefix_dec += 1
 
     return result
+
+def get_random_indices(array_length, n_of_indices):
+    indices = []
+    while len(indices) < n_of_indices:
+        index = random.randint(0, array_length)
+        if index not in indices:
+            indices.append(index)
+
+    return indices
 
 def get_polluted_password_option(cell_contents, option):
     cell_content_length = len(cell_contents)
