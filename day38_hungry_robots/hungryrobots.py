@@ -20,7 +20,6 @@ def main():
     say_bye()
 
 def play():
-    reset_game()
     canvas = Canvas(INITIAL_NUM_ALIVE_ROBOTS, INITIAL_NUM_DEAD_ROBOTS, INITIAL_NUM_TELEPORTS)
     while not GAME_OVER:
         canvas.show_canvas()
@@ -73,9 +72,6 @@ def get_player_available_directions(canvas):
 def is_valid_user_input(user_input, available_directions):
     valid_inputs = DIRECTIONS + [QUIT] + [TELEPORT]
     return user_input.upper() in valid_inputs
-
-def reset_game():
-    pass
 
 def player_wins():
     canvas.show_canvas()
