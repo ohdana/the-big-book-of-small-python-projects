@@ -1,9 +1,10 @@
 from canvas import Canvas
+import time
 
 WIDTH = 50
 HEIGHT = 30
-N_OF_ANTS = 10
-TICK_DURATION = 0.1
+N_OF_ANTS = 1
+TICK_DURATION = 1
 
 def main():
     init()

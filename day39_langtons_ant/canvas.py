@@ -4,7 +4,7 @@ FRAME_CHAR = '.'
 WHITE_CELL = ' '
 BLACK_CELL = chr(9618) # Character 9618 is '▒'
 UP, RIGHT, DOWN, LEFT = '^', '>', 'v', '<'
-DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
+DIRECTIONS = [UP, RIGHT, DOWN, LEFT]
 ANT_DIRECTION_MAP = {}
 
 class Canvas:
@@ -56,22 +56,17 @@ class Canvas:
         return (x, y) in self.black_cells
 
     def turn_clockwise(self, ant):
-        ant_char = self.ants[ant]
-        new_char_index = (DIRECTIONS.index(ant_char) + 1) % len(DIRECTIONS)
+        new_char_index = (DIRECTIONS.index(self.ants[ant]) + 1 + len(DIRECTIONS)) % len(DIRECTIONS)
         new_ant_char = DIRECTIONS[new_char_index]
         self.ants[ant] = new_ant_char
 
     def turn_counterclockwise(self, ant):
-        ant_char = self.ants[ant]
-        map_len = len(DIRECTIONS)
-        new_char_index = (DIRECTIONS.index(ant_char) - 1 + map_len) % map_len
+        new_char_index = (DIRECTIONS.index(self.ants[ant]) - 1 + len(DIRECTIONS)) % len(DIRECTIONS)
         new_ant_char = DIRECTIONS[new_char_index]
         self.ants[ant] = new_ant_char
 
     def turn_180(self, ant):
-        ant_char = self.ants[ant]
-        map_len = len(DIRECTIONS)
-        new_char_index = (DIRECTIONS.index(ant_char) + 2 + map_len) % map_len
+        new_char_index = (DIRECTIONS.index(self.ants[ant]) + 2 + len(DIRECTIONS)) % len(DIRECTIONS)
         new_ant_char = DIRECTIONS[new_char_index]
         self.ants[ant] = new_ant_char
 
@@ -86,10 +81,10 @@ class Canvas:
         print(self.get_canvas())
 
     def get_char(self, x, y):
-        if (x, y) in self.black_cells:
-            return BLACK_CELL
-        elif self.is_ant(x, y):
+        if self.is_ant(x, y):
             return self.ants[(x, y)]
+        elif (x, y) in self.black_cells:
+            return BLACK_CELL
         else:
             return WHITE_CELL
 
@@ -148,9 +143,3 @@ class Canvas:
         ANT_DIRECTION_MAP[DOWN] = self.down
         ANT_DIRECTION_MAP[LEFT] = self.left
         ANT_DIRECTION_MAP[RIGHT] = self.right
-
-canvas = Canvas(50, 30, 10)
-while True:
-    canvas.show_canvas()
-    canvas.tick()
-    time.sleep(0.3)
