@@ -218,9 +218,3 @@ class Canvas:
         return x - 1, y
     def z(self, x, y):
         return x - 1, y + 1
-
-#canvas = Canvas(INITIAL_NUM_ALIVE_ROBOTS, INITIAL_NUM_DEAD_ROBOTS, INITIAL_NUM_TELEPORTS)
-#while True:
-#    canvas.show_canvas()
-#    canvas.move_robots()
-#    time.sleep(0.5)
