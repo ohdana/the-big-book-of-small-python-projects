@@ -1,13 +1,39 @@
 import random
 
+STAR, SKULL, QUESTION = 'STAR', 'SKULL', 'QUESTION'
+STAR_FACE = ['+-----------+',
+            '|     .     |',
+            '|    ,O,    |',
+            '| \'ooOOOoo\' |',
+            '|   `OOO`   |',
+            '|   O\' \'O   |',
+            '+-----------+']
+SKULL_FACE = ['+-----------+',
+              '|    ___    |',
+              '|   /   \\   |',
+              '|  |() ()|  |',
+              '|   \\ ^ /   |',
+              '|    VVV    |',
+              '+-----------+']
+QUESTION_FACE = ['+-----------+',
+                 '|           |',
+                 '|           |',
+                 '|     ?     |',
+                 '|           |',
+                 '|           |',
+                 '+-----------+']
+SIDE_TYPE_MAP = { STAR: STAR_FACE, SKULL: SKULL_FACE, QUESTION: QUESTION_FACE }
+
 class Die:
-    def __init__(self, sides, side_type_map, die_type):
-        self.side_type_map = side_type_map
+    def __init__(self, sides, die_type):
         self.sides = self.get_sides(sides)
         self.type = die_type
 
     def roll(self):
-        return random.choice(self.sides), self.type
+        return random.choice(self.sides)
+
+    def get_type(self):
+        return self.type
 
     def get_sides(self, sides):
         result = []
@@ -19,4 +45,6 @@ class Die:
         return result
 
     def get_image(self, side_type):
-        return self.side_type_map[side_type]
+        image_lines = SIDE_TYPE_MAP[side_type]
+        image_lines.append('    {}    '.format(self.type))
+        return image_lines

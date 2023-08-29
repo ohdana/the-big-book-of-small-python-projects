@@ -1,94 +1,47 @@
-from cup import Cup
-from die import Die
-
+from gameengine import GameEngine
 import random
 
 YES, NO = 'Y', 'N'
-STAR_FACE = ['+-----------+',
-            '|     .     |',
-            '|    ,O,    |',
-            '| \'ooOOOoo\' |',
-            '|   `OOO`   |',
-            '|   O' 'O   |',
-            '+-----------+']
-SKULL_FACE = ['+-----------+',
-              '|    ___    |',
-              '|   /   \\   |',
-              '|  |() ()|  |',
-              '|   \\ ^ /   |',
-              '|    VVV    |',
-              '+-----------+']
-QUESTION_FACE = ['+-----------+',
-                 '|           |',
-                 '|           |',
-                 '|     ?     |',
-                 '|           |',
-                 '|           |',
-                 '+-----------+']
-GOLD, SILVER, BRONZE = 'GOLD', 'SILVER', 'BRONZE'
-STAR, SKULL, QUESTION = 'STAR', 'SKULL', 'QUESTION'
-SIDE_TYPE_MAP = { STAR: STAR_FACE, SKULL: SKULL_FACE, QUESTION: QUESTION_FACE }
-CUP_CONFIGURATION = { GOLD: 6, SILVER: 4, BRONZE: 3 }
-GET_DIE_MAP = None
-DIE_WIDTH = 13
-DIE_HEIGHT = 7
-GAME_OVER = None
-MAX_PLAYERS = 6
 MIN_PLAYERS = 2
+MAX_PLAYERS = 6
 
 def main():
     init()
     show_intro_message()
     play_again = True
+    game_engine = GameEngine()
     while play_again:
-        play()
+        play(game_engine)
         play_again = ask_if_play_again()
 
     say_bye()
 
-def play():
-    cup = init_cup()
-    reset_game()
+def play(game):
     players = get_players()
-    player_names = [name for name in players.keys()]
-    start_game()
-    turn = 0
-    while not GAME_OVER:
-        if is_last_round(players):
-            do_last_round(players)
-            break
-        player = player_names[turn]
-        take_turn(player)
-        turn = (turn + 1) % len(player_names)
-    calculate_final_results(player)
+    game.start_new_game(players)
+    game.play()
+    show_final_results(game)
 
-def calculate_final_results():
-    pass
+def show_final_results(game):
+    print(STRINGS_DICTIONARY.game_ended)
+    show_scores(game)
+    winners = game.get_winners()
+    if len(winners) > 1:
+        winners_str = ', '.join(winners)
+        print(STRINGS_DICTIONARY.winners.format(winners_str))
+    else:
+        print(STRINGS_DICTIONARY.winner.format(winners[0]))
 
-def is_last_round(players):
-    pass
-
-def get_score(player_dice):
-    pass
-    game_over()
-
-def start_game():
-    pass
-
-def take_turn(player):
-    pass
-
-def do_last_round(players):
-    for player in players:
-        take_turn(player)
+def show_scores(game):
+    scores = game.get_scores()
+    scores_str = ''
+    for player in scores.keys():
+        scores_str += '{}: {}'.format(player, scores[player])
+    print(STRINGS_DICTIONARY.scores.format(scores_str))
 
 def get_players():
     n_of_players = get_n_of_players()
-    players = {}
-    for i in range(n_of_players):
-        player_name = get_player_name(i + 1)
-        players[player_name] = 0
-    return players
+    return [get_player_name(i + 1) for i in range(n_of_players)]
 
 def get_player_name(n):
     print(STRINGS_DICTIONARY.whats_players_name.format(n))
@@ -96,30 +49,20 @@ def get_player_name(n):
     if not user_input:
         return get_player_name(n)
 
+    return user_input
+
 def get_n_of_players():
     user_input = input(STRINGS_DICTIONARY.how_many_players)
     if not is_valid_n_of_players_input(user_input):
         return get_n_of_players()
+
     return int(user_input)
 
 def is_valid_n_of_players_input(user_input):
-    if not user_input:
-        return False
-
     if not user_input.isdigit():
         return False
 
     return MIN_PLAYERS <= int(user_input) <= MAX_PLAYERS
-
-def reset_game():
-    set_game_over(False)
-
-def game_over():
-    set_game_over(True)
-
-def set_game_over(value):
-    global GAME_OVER
-    GAME_OVER = value
 
 def ask_if_play_again():
     answer = input(STRINGS_DICTIONARY.play_again)
@@ -137,40 +80,8 @@ def show_intro_message():
 def say_bye():
     print(STRINGS_DICTIONARY.bye)
 
-def init_cup():
-    dice = get_dice()
-    return Cup(dice)
-
-def get_dice():
-    dice = []
-    for die_type in CUP_CONFIGURATION:
-        n_of_dice = CUP_CONFIGURATION[die_type]
-        for i in range(n_of_dice):
-            dice.append(GET_DIE_MAP[die_type]())
-    return dice
-
-def get_gold_die():
-    die_sides = { STAR: 3, SKULL: 1, QUESTION: 2 }
-    return Die(die_sides, SIDE_TYPE_MAP, GOLD)
-
-def get_silver_die():
-    die_sides = { STAR: 2, SKULL: 2, QUESTION: 2 }
-    return Die(die_sides, SIDE_TYPE_MAP, SILVER)
-
-def get_bronze_die():
-    die_sides = { STAR: 1, SKULL: 3, QUESTION: 2 }
-    return Die(die_sides, SIDE_TYPE_MAP, BRONZE)
-
-def init_get_die_map():
-    global GET_DIE_MAP
-    GET_DIE_MAP = {}
-    GET_DIE_MAP[GOLD] = get_gold_die
-    GET_DIE_MAP[SILVER] = get_silver_die
-    GET_DIE_MAP[BRONZE] = get_bronze_die
-
 def init():
     init_strings_dictionary()
-    init_get_die_map()
 
 ##############################
 def init_strings_dictionary():
@@ -178,14 +89,26 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY = StringsDictionary()
 
     STRINGS_DICTIONARY.intro_message = '''
-    Lucky Start
+    Lucky Stars
 
     Idea by Al Sweigart al@inventwithpython.com
     Implementation by @ohdana
 
-    A "press your luck" game where you roll dice to gather as many stars
-    as possible. You can roll as many times as you want, but if you roll
-    three skulls you lose all your stars.'''
+    A "press your luck" game where you roll dice with Stars, Skulls, and
+    Question Marks.
+
+    On your turn, you pull three random dice from the dice cup and roll
+    them. You can roll Stars, Skulls, and Question Marks. You can end your
+    turn and get one point per Star. If you choose to roll again, you keep
+    the Question Marks and pull new dice to replace the Stars and Skulls.
+    If you collect three Skulls, you lose all your Stars and end your turn.
+
+    When a player gets 13 points, everyone else gets one more turn before
+    the game ends. Whoever has the most points wins.
+
+    There are 6 Gold dice, 4 Silver dice, and 3 Bronze dice in the cup.
+    Gold dice have more Stars, Bronze dice have more Skulls, and Silver is
+    even.'''
     STRINGS_DICTIONARY.bye = '''
     Bye!'''
     STRINGS_DICTIONARY.play_again = '''
@@ -194,26 +117,15 @@ def init_strings_dictionary():
     Do you want to roll again? y/n: '''
     STRINGS_DICTIONARY.stars_collected = 'Stars collected: '
     STRINGS_DICTIONARY.skulls_collected = 'Skulls collected: '
-    STRINGS_DICTIONARY.turn_of: '''
-    It is {}'s turn.'''
     STRINGS_DICTIONARY.scores = '''
-    SCORES: {}'''
+    SCORES:
+    {}'''
     STRINGS_DICTIONARY.input = '''
     >'''
     STRINGS_DICTIONARY.how_many_players = '''
     How many players are there? Please enter number more than 1: '''
     STRINGS_DICTIONARY.whats_players_name = '''
     What is player #{}'s name?'''
-    STRINGS_DICTIONARY.not_enough_dice = '''
-    There aren\'t enough dice left in the cup to continue {}'s turn.'''
-    STRINGS_DICTIONARY.press_enter = '''
-    Press Enter to continue...'''
-    STRINGS_DICTIONARY.lost_stars = '''
-    3 or more skulls means you've lost your stars!'''
-    STRINGS_DICTIONARY.reached_13 = '''
-    has reached 13 points!!!'''
-    STRINGS_DICTIONARY.one_more_turn = '''
-    Everyone else will get one more turn!'''
     STRINGS_DICTIONARY.game_ended = '''
     The game has ended...'''
     STRINGS_DICTIONARY.winner = '''

@@ -5,5 +5,12 @@ class Cup:
         self.dice = dice
 
     def pull(self, n_of_dice):
-        dice = random.choices(self.dice, k=n_of_dice)
-        return [die.roll() for die in dice]
+        dice = []
+        for i in range(n_of_dice):
+            random.shuffle(self.dice)
+            random_die = self.dice.pop()
+            dice.append(random_die)
+        return dice
+
+    def get_n_of_dice(self):
+        return len(self.dice)
