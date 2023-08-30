@@ -1,7 +1,8 @@
 from cup import Cup
 from die import Die
 
-DIE_WIDTH = 13
+N_OF_DICE = 3
+MAX_SKULLS = 3
 DIE_HEIGHT = 7
 YES, NO = 'Y', 'N'
 GOLD, SILVER, BRONZE = 'GOLD', 'SILVER', 'BRONZE'
@@ -17,9 +18,6 @@ class Turn:
         self.skulls_collected = 0
         self.turn_over = False
 
-    def is_over(self):
-        return self.turn_over
-
     def play(self):
         cup = self.init_cup()
         hand = self.make_initial_roll(cup)
@@ -27,43 +25,36 @@ class Turn:
         while not self.turn_over:
             roll_again = self.ask_whether_roll_again()
             if not roll_again:
-                self.turn_over = True
+                self.end_turn()
             else:
                 hand = self.roll(cup, hand)
 
-    def show_roll_results(self, roll_results):
-        self.show_dice(roll_results)
-        print('Stars collected: {}   Skulls collected: {}'.format(self.stars_collected, self.skulls_collected))
-
-    def show_dice(self, roll_results):
-        lines = []
-        dice_images = [die.get_image(die_face) for die, die_face in roll_results]
-        for i in range(DIE_HEIGHT + 1):
-            line = ' '.join([die_image[i] for die_image in dice_images])
-            lines.append(line)
-        image = '\n'.join(lines)
-        print(image)
-
-    def roll(self, cup, hand):
+    def get_dice_to_keep(self, hand):
         dice_to_keep = []
         for die in hand:
             die_obj, roll_result = die
             if roll_result == QUESTION:
                 dice_to_keep.append(die_obj)
-        n_of_new_dice = 3 - len(dice_to_keep)
+        return dice_to_keep
+
+    def roll(self, cup, hand):
+        dice_to_keep = self.get_dice_to_keep(hand)
+        n_of_new_dice = N_OF_DICE - len(dice_to_keep)
 
         if n_of_new_dice > cup.get_n_of_dice():
-            self.turn_over = True
             print('There aren\'t enough dice left in the cup to continue {}\'s turn.'.format(self.player_name))
+            self.end_turn()
             return
 
         new_dice = cup.pull(n_of_new_dice)
-        dice = dice_to_keep + new_dice
-        roll_results = self.get_roll_results(dice)
+        roll_results = self.get_roll_results(dice_to_keep + new_dice)
         self.calculate_roll_results(roll_results)
         self.show_roll_results(roll_results)
 
         return roll_results
+
+    def is_over(self):
+        return self.turn_over
 
     def make_initial_roll(self, cup):
         return self.roll(cup, [])
@@ -72,6 +63,13 @@ class Turn:
         return [(die, die.roll()) for die in dice]
 
     def calculate_roll_results(self, dice):
+        self.calculate_stars_and_skulls(dice)
+        if self.skulls_collected >= MAX_SKULLS:
+            print('3 or more skulls means you\'ve lost your stars!')
+            self.stars_collected = 0
+            self.end_turn()
+
+    def calculate_stars_and_skulls(self, dice):
         for die in dice:
             die_obj, roll_result = die
             if roll_result == STAR:
@@ -79,22 +77,10 @@ class Turn:
             elif roll_result == SKULL:
                 self.skulls_collected += 1
 
-        if self.skulls_collected >= 3:
-            print('3 or more skulls means you\'ve lost your stars!')
-            self.stars_collected = 0
-            self.turn_over = True
+    def end_turn(self):
+        self.turn_over = True
 
-    def ask_whether_roll_again(self):
-        answer = input('Do you want to roll again? y/n: ')
-        if not self.is_valid_y_n(answer):
-            return self.ask_whether_roll_again()
-
-        return answer.upper() == YES
-
-    def is_valid_y_n(self, answer):
-        return answer.upper() in [YES, NO]
-
-    def get_points_collected(self):
+    def get_stars_collected(self):
         return self.stars_collected
 
     def init_cup(self):
@@ -125,3 +111,26 @@ class Turn:
         GET_DIE_MAP[GOLD] = self.get_gold_die
         GET_DIE_MAP[SILVER] = self.get_silver_die
         GET_DIE_MAP[BRONZE] = self.get_bronze_die
+
+    def ask_whether_roll_again(self):
+        answer = input('Do you want to roll again? y/n: ')
+        if not self.is_valid_y_n(answer):
+            return self.ask_whether_roll_again()
+
+        return answer.upper() == YES
+
+    def is_valid_y_n(self, answer):
+        return answer.upper() in [YES, NO]
+
+    def show_roll_results(self, roll_results):
+        self.show_dice(roll_results)
+        print('Stars collected: {}   Skulls collected: {}'.format(self.stars_collected, self.skulls_collected))
+
+    def show_dice(self, roll_results):
+        lines = []
+        dice_images = [die.get_image(die_face) for die, die_face in roll_results]
+        for i in range(DIE_HEIGHT + 1):
+            line = ' '.join([die_image[i] for die_image in dice_images])
+            lines.append(line)
+        image = '\n'.join(lines)
+        print(image)

@@ -34,10 +34,10 @@ def show_final_results(game):
 
 def show_scores(game):
     scores = game.get_scores()
-    scores_str = ''
+    scores_lines = []
     for player in scores.keys():
-        scores_str += '{}: {}'.format(player, scores[player])
-    print(STRINGS_DICTIONARY.scores.format(scores_str))
+        scores_lines.append('{} = {}'.format(player, scores[player]))
+    print('SCORES: \n{}'.format(', '.join(scores_lines)))
 
 def get_players():
     n_of_players = get_n_of_players()

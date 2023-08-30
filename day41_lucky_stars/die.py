@@ -47,4 +47,5 @@ class Die:
     def get_image(self, side_type):
         image_lines = SIDE_TYPE_MAP[side_type]
         image_lines.append('    {}    '.format(self.type))
+
         return image_lines

@@ -32,16 +32,16 @@ class GameEngine:
         scores = []
         for player in self.player_scores.keys():
             scores.append('{} = {}'.format(player, self.player_scores[player]))
-        print('SCORES: \n{}'.format(' '.join(scores)))
+        print('SCORES: \n{}'.format(', '.join(scores)))
 
     def take_turn(self, player_name):
         print('It is {}\'s turn.'.format(player_name))
         turn = Turn(player_name)
         while not turn.is_over():
             turn.play()
-        points_collected = turn.get_points_collected()
-        self.update_player_score(player_name, points_collected)
-        print('{} got {} stars!'.format(player_name, points_collected))
+        stars_collected = turn.get_stars_collected()
+        self.update_player_score(player_name, stars_collected)
+        print('{} got {} stars!'.format(player_name, stars_collected))
 
     def reached_winning_score(self, player_name):
         return self.player_scores[player_name] >= WINNING_SCORE
@@ -51,7 +51,7 @@ class GameEngine:
         input('Press Enter to continue...')
         last_round_players = [name for name in self.player_names if name is not player_name]
         for player in last_round_players:
-            self.take_turn(player_name)
+            self.take_turn(player)
 
     def update_player_score(self, player_name, points):
         self.player_scores[player_name] += points
