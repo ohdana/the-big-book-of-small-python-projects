@@ -1,4 +1,5 @@
 from gameengine import GameEngine
+from canvasprinter import CanvasPrinter
 
 YES, NO = 'Y', 'N'
 QUIT = 'QUIT'
@@ -6,7 +7,8 @@ N_OF_DOORS = 3
 ONE, TWO, THREE = '1', '2', '3'
 SWAP, NO_SWAP = 'SWAP', 'NO_SWAP'
 WIN, LOSS = 'WIN', 'LOSS'
-DOOR_HEIGHT = 7
+GAME_ENGINE = None
+CANVAS_PRINTER = None
 
 def main():
     init()
@@ -16,83 +18,67 @@ def main():
     say_bye()
 
 def play():
-    game_engine = GameEngine(N_OF_DOORS)
     while True:
-        game_engine.start_game()
-        show_doors(game_engine)
+        start_game()
         user_input = get_user_input()
-        if user_input == QUIT:
+        if is_quit_requested(user_input):
             break
-        player_chosen_door = int(user_input)
-        game_engine.set_player_initial_choice(player_chosen_door)
-        game_engine.open_all_but_one_goat_doors()
-        show_doors(game_engine)
-        swap = offer_to_swap()
-        if swap:
-            game_engine.swap_doors()
-        game_engine.end_game()
-        show_doors(game_engine)
-        if game_engine.is_win():
-            print(STRINGS_DICTIONARY.you_won)
-        else:
-            print(STRINGS_DICTIONARY.you_lost)
-        stats = game_engine.get_stats()
-        show_stats(stats)
-        input(STRINGS_DICTIONARY.play_again)
+        offer_to_choose_a_door(user_input)
+        open_all_but_two_doors()
+        offer_to_swap_the_door()
+        end_game()
+        show_stats()
+        offer_to_play_again()
 
-def calculate_rate(wins, losses):
-    if not wins:
-        return 0.0
+def start_game():
+    GAME_ENGINE.start_game()
+    show_doors()
 
-    return round(wins * 100 / (wins + losses), 1)
+def end_game():
+    GAME_ENGINE.end_game()
+    show_doors()
 
-def show_stats(stats):
+def is_quit_requested(user_input):
+    return user_input == QUIT
+
+def offer_to_play_again():
+    input(STRINGS_DICTIONARY.play_again)
+
+def calculate_results():
+    if GAME_ENGINE.is_win():
+        print(STRINGS_DICTIONARY.you_won)
+    else:
+        print(STRINGS_DICTIONARY.you_lost)
+
+def offer_to_swap_the_door():
+    show_doors()
+    swap = offer_to_swap()
+    if swap:
+        GAME_ENGINE.swap_doors()
+    else:
+        GAME_ENGINE.confirm_initial_choice()
+
+def open_all_but_two_doors():
+    GAME_ENGINE.open_all_but_one_goat_doors()
+
+def offer_to_choose_a_door(user_input):
+    player_chosen_door = int(user_input)
+    GAME_ENGINE.set_player_initial_choice(player_chosen_door)
+
+def show_stats():
+    stats = GAME_ENGINE.get_stats()
     swap_wins, swap_losses = stats[SWAP][WIN], stats[SWAP][LOSS]
     swap_rate = calculate_rate(swap_wins, swap_losses)
+
     no_swap_wins, no_swap_losses = stats[NO_SWAP][WIN], stats[NO_SWAP][LOSS]
     no_swap_rate = calculate_rate(no_swap_wins, no_swap_losses)
+
     format_params = [swap_wins, swap_losses, swap_rate, no_swap_wins, no_swap_losses, no_swap_rate]
     print(STRINGS_DICTIONARY.stats.format(*format_params))
 
-def show_initial_doors():
-    canvas = []
-    for i in range(DOOR_HEIGHT):
-        lines = []
-        for j in range(N_OF_DOORS):
-            door_number = j + 1
-            line_pattern = get_closed_door_line(i, door_number)
-            lines.append(line_pattern)
-        canvas.append('  '.join(lines))
-    show_canvas(canvas)
-
-def get_closed_door_line(line_number, door_number):
-    line_pattern = STRINGS_DICTIONARY.closed_door[line_number]
-    if '{}' in line_pattern:
-        line_pattern = line_pattern.format(door_number)
-
-    return line_pattern
-
-def show_doors(game_engine):
-    canvas = []
-    opened_doors = game_engine.get_opened_doors()
-    for i in range(DOOR_HEIGHT):
-        lines = []
-        for j in range(N_OF_DOORS):
-            door_number = j + 1
-            if door_number in opened_doors.keys():
-                door = opened_doors[door_number]
-                if door.is_goat():
-                    line_pattern = STRINGS_DICTIONARY.goat_door[i]
-                elif door.is_car():
-                    line_pattern = STRINGS_DICTIONARY.car_door[i]
-            else:
-                line_pattern = get_closed_door_line(i, door_number)
-            lines.append(line_pattern)
-        canvas.append('  '.join(lines))
-    show_canvas(canvas)
-
-def show_canvas(canvas):
-    print('\n'.join(canvas))
+def show_doors():
+    opened_doors = GAME_ENGINE.get_opened_doors()
+    CANVAS_PRINTER.show_canvas(opened_doors)
 
 def get_user_input():
     user_input = input(STRINGS_DICTIONARY.pick_door)
@@ -120,6 +106,12 @@ def is_valid_user_input(user_input):
 def is_valid_y_n(answer):
     return answer.upper() in [YES, NO]
 
+def calculate_rate(wins, losses):
+    if not wins:
+        return 0.0
+
+    return round(wins * 100 / (wins + losses), 1)
+
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
 
@@ -128,6 +120,16 @@ def say_bye():
 
 def init():
     init_strings_dictionary()
+    init_game_engine()
+    init_canvas_printer()
+
+def init_game_engine():
+    global GAME_ENGINE
+    GAME_ENGINE = GameEngine(N_OF_DOORS)
+
+def init_canvas_printer():
+    global CANVAS_PRINTER
+    CANVAS_PRINTER = CanvasPrinter(N_OF_DOORS)
 
 ##############################
 def init_strings_dictionary():

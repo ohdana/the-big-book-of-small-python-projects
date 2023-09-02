@@ -17,23 +17,57 @@ class GameEngine:
         self.player_initial_choice = None
         self.player_final_choice = None
 
+    def end_game(self):
+        self.open_all_doors()
+        self.calculate_game_result()
+        self.update_stats()
+
+    def get_doors(self):
+        return self.doors
+
+    def get_stats(self):
+        return self.stats
+
+    def get_opened_doors(self):
+        opened_doors = {}
+        for number in self.doors:
+            if number in self.closed_doors:
+                continue
+            opened_doors[number] = self.doors[number]
+
+        return opened_doors
+
+    def set_player_initial_choice(self, door_number):
+        self.player_initial_choice = door_number
+
     def swap_doors(self):
         if self.player_initial_choice == self.car_door:
             self.player_final_choice = self.last_closed_goat_door
         else:
             self.player_final_choice = self.car_door
 
-    def set_player_initial_choice(self, door_number):
-        self.player_initial_choice = door_number
+    def confirm_initial_choice(self):
         self.player_final_choice = self.player_initial_choice
+
+    def is_win(self):
+        return self.player_won
 
     def open_all_but_one_goat_doors(self):
         self.last_closed_goat_door = self.get_goat_door_to_keep_closed()
         doors_to_keep_closed = [self.car_door, self.last_closed_goat_door]
-        for i in range(1, self.n_of_doors + 1):
-            if i in doors_to_keep_closed:
-                continue
+        doors_to_open = [i for i in range(1, self.n_of_doors + 1) if i not in doors_to_keep_closed]
+        self.open_doors(doors_to_open)
+
+    def open_doors(self, door_numbers):
+        for i in door_numbers:
             self.open_door(i)
+
+    def open_door(self, door_number):
+        self.closed_doors.remove(door_number)
+
+    def open_all_doors(self):
+        closed_doors = copy.deepcopy(self.closed_doors)
+        self.open_doors(closed_doors)
 
     def get_goat_door_to_keep_closed(self):
         if self.player_initial_choice == self.car_door:
@@ -45,55 +79,46 @@ class GameEngine:
         random_door_number = random.randint(1, self.n_of_doors)
         if not self.doors[random_door_number].is_goat():
             return self.choose_random_goat_door()
-
         return random_door_number
 
-    def open_door(self, door_number):
-        self.closed_doors.remove(door_number)
+    def increment_stats(self, did_swap, did_win):
+        self.stats[did_swap][did_win] += 1
 
-    def is_win(self):
-        return self.win
+    def calculate_game_result(self):
+        self.player_won = self.player_final_choice == self.car_door
 
-    def end_game(self):
-        closed_doors = copy.deepcopy(self.closed_doors)
-        for door_number in closed_doors:
-            self.open_door(door_number)
+    def update_swap_stats(self):
+        if self.player_won:
+            self.increment_stats(SWAP, WIN)
+        else:
+            self.increment_stats(SWAP, LOSS)
 
-        win = self.player_final_choice == self.car_door
-        self.win = win
+    def update_no_swap_stats(self):
+        if self.player_won:
+            self.increment_stats(NO_SWAP, WIN)
+        else:
+            self.increment_stats(NO_SWAP, LOSS)
 
+    def update_stats(self):
         stats_branch = None
-        if self.player_final_choice == self.player_initial_choice:
-            stats_branch = self.stats[NO_SWAP]
+        player_swapped = self.player_final_choice != self.player_initial_choice
+        if player_swapped:
+            self.update_swap_stats()
         else:
-            stats_branch = self.stats[SWAP]
+            self.update_no_swap_stats()
 
-        if win:
-            stats_branch[WIN] += 1
-        else:
-            stats_branch[LOSS] += 1
+    def generate_car_door_number(self):
+        random_number = random.randint(1, self.n_of_doors)
+        self.car_door = random_number
 
-    def get_doors(self):
-        return self.doors
-
-    def get_opened_doors(self):
-        opened_doors = copy.deepcopy(self.doors)
-        for door_number in self.closed_doors:
-            opened_doors.pop(door_number)
-        return opened_doors
-
-    def get_stats(self):
-        return self.stats
+        return random_number
 
     def init_doors(self):
-        random_number = random.randint(1, self.n_of_doors)
+        car_door_number = self.generate_car_door_number()
         doors = {}
         for i in range(1, self.n_of_doors + 1):
-            if i == random_number:
-                self.car_door = i
-                doors[i] = Door(i, CAR)
-            else:
-                doors[i] = Door(i, GOAT)
+            door_type = CAR if i == car_door_number else GOAT
+            doors[i] = Door(i, door_type)
         return doors
 
     def init_stats(self):
