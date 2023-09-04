@@ -4,31 +4,32 @@ PREFIX_LENGTH = 2
 def main():
     init()
     show_intro_message()
-    play()
+    while True:
+        play()
 
 def play():
     starting_number = get_starting_number()
     n_of_numbers = get_n_of_numbers()
     show_numbers(starting_number, n_of_numbers)
 
-def get_positive_number_from_user(message):
+def get_natural_number_from_user(message):
     user_input = input(message)
-    while not is_valid_positive_number(user_input):
-        return get_positive_number_from_user()
+    while not is_valid_natural_number(user_input):
+        return get_natural_number_from_user()
 
     return int(user_input)
 
-def is_valid_positive_number(user_input):
+def is_valid_natural_number(user_input):
     if not user_input.isdigit():
         return False
 
-    return int(user_input) >= 0
+    return int(user_input) > 0
 
 def get_n_of_numbers():
-    return get_positive_number_from_user(STRINGS_DICTIONARY.enter_n_of_numbers)
+    return get_natural_number_from_user(STRINGS_DICTIONARY.enter_n_of_numbers)
 
 def get_starting_number():
-    return get_positive_number_from_user(STRINGS_DICTIONARY.enter_starting_number)
+    return get_natural_number_from_user(STRINGS_DICTIONARY.enter_starting_number)
 
 def show_numbers(starting_number, n_of_numbers):
     for i in range (starting_number, starting_number + n_of_numbers):
