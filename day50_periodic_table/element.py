@@ -19,8 +19,16 @@ class Element:
             'Abundance in earth\'s crust': self.abundance_in_earths_crust + ' mg/kg'
         }
 
+    def stringify(self):
+        lines = []
+        details = self.get_details()
+        for key in details.keys():
+            lines.append('{}: {}'.format(key, details[key]))
+
+        return '\n'.join(lines)
+
     def init_element(self, csv_data):
-        self.atomic_number = csv_data[0]
+        self.atomic_number = int(csv_data[0])
         self.symbol = csv_data[1]
         self.element = csv_data[2]
         self.origin_of_name = csv_data[3]
