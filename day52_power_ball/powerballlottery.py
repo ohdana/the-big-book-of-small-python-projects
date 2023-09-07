@@ -1,6 +1,5 @@
 from powerballengine import PowerBallEngine
 from powerballplayer import PowerBallPlayer
-from powerballgame import PowerBallGame
 
 MAX_N_OF_ITERATIONS = 1000000
 MIN_POWERBALL_N = 1
@@ -8,7 +7,6 @@ MAX_POWERBALL_N = 26
 MIN_BALL_N = 1
 MAX_BALL_N = 69
 N_OF_REGULAR_BALLS = 5
-N_OF_POWERBALLS = 1
 LOTTERY_TICKET_PRICE = 2
 
 def main():
@@ -47,25 +45,18 @@ def show_total_estimated_price(n_of_iterations):
     total_price = n_of_iterations * LOTTERY_TICKET_PRICE
     print(STRINGS_DICTIONARY.cost_of_play.format(total_price, n_of_iterations))
 
-def get_n_of_iterations():
-    print(STRINGS_DICTIONARY.enter_n_of_iterations)
-    user_input = input(STRINGS_DICTIONARY.input)
-    is_valid_input, parsed_numbers = try_parse_numbers(user_input, 1, 1, MAX_N_OF_ITERATIONS)
-
-    if not is_valid_input:
-        return get_n_of_iterations()
-
-    return parsed_numbers[0]
-
 def show_results(is_win, winning_numbers):
-    winning_regular_numbers, winning_powerball_number = winning_numbers
-    winning_regular_numbers_str = [str(number) for number in winning_regular_numbers]
-    winning_numbers_str = ' '.join(winning_regular_numbers_str) + ' and ' + str(winning_powerball_number)
-    print(STRINGS_DICTIONARY.winning_numbers.format(winning_numbers_str))
-    if not is_win:
-        print(STRINGS_DICTIONARY.winning_numbers.format(winning_numbers_str), STRINGS_DICTIONARY.you_lost)
-    else:
+    winning_numbers_str = get_formatted_winning_numbers(winning_numbers)
+    if is_win:
+        print(STRINGS_DICTIONARY.winning_numbers.format(winning_numbers_str))
         print(STRINGS_DICTIONARY.you_won)
+    else:
+        print(STRINGS_DICTIONARY.winning_numbers.format(winning_numbers_str) + '. ' + STRINGS_DICTIONARY.you_lost)
+
+def get_formatted_winning_numbers(numbers):
+    regular_numbers, powerball_number = numbers
+    regular_numbers_str = ' '.join([str(number) for number in regular_numbers])
+    return regular_numbers_str + ' and ' + str(powerball_number)
 
 def is_exact_match(winning_numbers, players_numbers):
     return winning_numbers == players_numbers
@@ -77,22 +68,34 @@ def get_player_numbers():
     return regular_numbers, powerball_number
 
 def get_player_powerball_number():
-    print(STRINGS_DICTIONARY.enter_powerball)
-    user_input = input(STRINGS_DICTIONARY.input)
-    is_valid_input, parsed_numbers = try_parse_numbers(user_input, N_OF_POWERBALLS, MIN_POWERBALL_N, MAX_POWERBALL_N)
+    input_message = STRINGS_DICTIONARY.enter_powerball
+    min_bound, max_bound = MIN_POWERBALL_N, MAX_POWERBALL_N
 
-    if not is_valid_input:
-        return get_player_powerball_number()
-
-    return parsed_numbers[0]
+    return get_number_user_input(input_message, min_bound, max_bound)
 
 def get_player_regular_numbers():
-    print(STRINGS_DICTIONARY.enter_numbers)
+    input_message = STRINGS_DICTIONARY.enter_numbers
+    n_of_numbers, min_bound, max_bound = N_OF_REGULAR_BALLS, MIN_BALL_N, MAX_BALL_N
+    numbers = get_numbers_user_input(input_message, n_of_numbers, min_bound, max_bound)
+
+    return numbers
+
+def get_n_of_iterations():
+    input_message = STRINGS_DICTIONARY.enter_n_of_iterations
+    min_bound, max_bound = 1, MAX_N_OF_ITERATIONS
+
+    return get_number_user_input(input_message, min_bound, max_bound)
+
+def get_number_user_input(input_message, min_bound, max_bound):
+    return get_numbers_user_input(input_message, 1, min_bound, max_bound)[0]
+
+def get_numbers_user_input(input_message, n_of_numbers, min_bound, max_bound):
+    print(input_message)
     user_input = input(STRINGS_DICTIONARY.input)
-    is_valid_input, parsed_numbers = try_parse_numbers(user_input, N_OF_REGULAR_BALLS, MIN_BALL_N, MAX_BALL_N)
+    is_valid_input, parsed_numbers = try_parse_numbers(user_input, n_of_numbers, min_bound, max_bound)
 
     if not is_valid_input:
-        return get_player_regular_numbers()
+        return get_numbers_user_input(input_message, n_of_numbers, min_bound, max_bound)
 
     return sorted(parsed_numbers)
 
