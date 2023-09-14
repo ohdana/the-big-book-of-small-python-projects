@@ -6,10 +6,7 @@ QUIT = 'quit'
 def main():
     init()
     show_intro_message()
-    play_again = True
-    while play_again:
-        play()
-        play_again = ask_play_again()
+    play()
     show_bye_message()
 
 def play():
@@ -23,7 +20,7 @@ def play():
             announce_empty_move(coins_flip_result, player_token_type)
             game.pass_turn()
             continue
-        tokens_to_move = game.get_tokens_to_move(player_token_type)
+        tokens_to_move = game.get_tokens_to_move(player_token_type, points)
         user_input = get_user_input(tokens_to_move, coins_flip_result, points)
         if user_input is QUIT:
             break
@@ -69,7 +66,7 @@ def ask_play_again():
     if not user_input in [YES, NO]:
         return ask_play_again()
 
-    return user_input == YES
+    return user_input
 
 def show_board(game):
     print(game.get_board_image())

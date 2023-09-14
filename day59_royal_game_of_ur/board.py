@@ -26,26 +26,32 @@ TOKEN_TYPES = [O_TOKEN, X_TOKEN]
 N_OF_TOKENS_PER_PLAYER = 7
 NO_TOKEN = ' '
 HOME, GOAL = 'home', 'goal'
-#HOME_X, HOME_O, GOAL_X, GOAL_O = 'home_x', 'home_o', 'goal_x', 'goal_o'
-#TOKEN_TYPE_HOME_MAP = { O_TOKEN: HOME_O, X_TOKEN: HOME_X }
-#TOKEN_TYPE_GOAL_MAP = { O_TOKEN: GOAL_O, X_TOKEN: GOAL_X }
 PATH_O = [HOME, A, B, C, D, I, J, K, L, M, N, O, P, Q, R, GOAL]
 PATH_X = [HOME, E, F, G, H, I, J, K, L, M, N, O, P, S, T, GOAL]
 TOKEN_TYPE_PATH_MAP = { O_TOKEN: PATH_O, X_TOKEN: PATH_X }
 FLOWERS_CELLS = [D, H, L, R, T]
+MIDDLE_FLOWER_CELL = L
 
 class Board:
     def __init__(self):
         self.tokens_map = self.init_tokens_map(TOKEN_TYPES)
         self.init_tokens(TOKEN_TYPES, N_OF_TOKENS_PER_PLAYER)
 
+    def is_middle_flower_cell(self, cell):
+        return cell == MIDDLE_FLOWER_CELL
+
     def is_flower_cell(self, cell):
         return cell in FLOWERS_CELLS
 
     def get_tokens_to_move(self, token_type):
         unique_token_cells = set(self.tokens_map[token_type])
-
         return [self.get_display_cell_name(cell) for cell in unique_token_cells if cell != GOAL]
+
+    def is_available_middle_flower_cell(self, my_token_type):
+        opponent_token_type = self.get_opponent_token_type(my_token_type)
+        if MIDDLE_FLOWER_CELL in self.tokens_map[opponent_token_type]:
+            return False
+        return True
 
     def get_display_cell_name(self, cell):
         if HOME in cell:
@@ -53,6 +59,15 @@ class Board:
         if GOAL in cell:
             return GOAL
         return cell
+
+    def get_dest_cell(self, token_type, src_cell, n_of_steps):
+        path = TOKEN_TYPE_PATH_MAP[token_type]
+        src_cell_index_in_path = path.index(src_cell)
+        dest_cell_index_in_path = src_cell_index_in_path + n_of_steps
+        if dest_cell_index_in_path >= len(path):
+            dest_cell_index_in_path = len(path) - 1
+
+        return path[dest_cell_index_in_path]
 
     def init_tokens_map(self, token_types):
         tokens_map = {}
@@ -66,12 +81,7 @@ class Board:
         return all([cell == GOAL for cell in token_type_cells])
 
     def make_move(self, token_type, src_cell, n_of_steps):
-        path = TOKEN_TYPE_PATH_MAP[token_type]
-        src_cell_index_in_path = path.index(src_cell)
-        dest_cell_index_in_path = src_cell_index_in_path + n_of_steps
-        if dest_cell_index_in_path >= len(path):
-            dest_cell_index_in_path = len(path) - 1
-        dest_cell = path[dest_cell_index_in_path]
+        dest_cell = self.get_dest_cell(token_type, src_cell, n_of_steps)
         self.send_opponent_tokens_home(token_type, dest_cell)
         self.move_token(token_type, src_cell, dest_cell)
 

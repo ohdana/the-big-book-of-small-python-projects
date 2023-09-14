@@ -24,8 +24,15 @@ class Game:
         self.turn = 0
         self.last_move = None
 
-    def get_tokens_to_move(self, token_type):
-        return self.board.get_tokens_to_move(token_type)
+    def get_tokens_to_move(self, token_type, n_of_steps):
+        tokens = self.board.get_tokens_to_move(token_type)
+        for src_cell in tokens:
+            dest_cell = self.board.get_dest_cell(token_type, src_cell, n_of_steps)
+            if self.board.is_middle_flower_cell(dest_cell):
+                if not self.board.is_available_middle_flower_cell(token_type):
+                    tokens.remove(src_cell)
+
+        return tokens
 
     def get_board_image(self):
         return self.board.build()
