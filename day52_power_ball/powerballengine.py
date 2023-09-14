@@ -17,7 +17,11 @@ class PowerBallEngine():
         return regular_numbers, powerball_number
 
     def generate_regular_numbers(self):
-        numbers = [self.generate_regular_number() for i in range(N_OF_REGULAR_NUMBERS)]
+        numbers = []
+        while len(numbers) < N_OF_REGULAR_NUMBERS:
+            random_number = self.generate_regular_number()
+            if random_number not in numbers:
+                numbers.append(random_number)
         return sorted(numbers)
 
     def generate_regular_number(self):
