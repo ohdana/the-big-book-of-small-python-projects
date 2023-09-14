@@ -6,7 +6,10 @@ QUIT = 'quit'
 def main():
     init()
     show_intro_message()
-    play()
+    play_again = True
+    while play_again:
+        play()
+        play_again = ask_play_again()
     show_bye_message()
 
 def play():
@@ -66,7 +69,7 @@ def ask_play_again():
     if not user_input in [YES, NO]:
         return ask_play_again()
 
-    return user_input
+    return user_input == YES
 
 def show_board(game):
     print(game.get_board_image())
