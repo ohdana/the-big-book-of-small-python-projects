@@ -6,7 +6,10 @@ QUIT = 'quit'
 def main():
     init()
     show_intro_message()
-    play()
+    play_again = True
+    while play_again:
+        play()
+        play_again = ask_play_again()
     show_bye_message()
 
 def play():
@@ -21,6 +24,10 @@ def play():
             game.pass_turn()
             continue
         tokens_to_move = game.get_tokens_to_move(player_token_type, points)
+        if not tokens_to_move:
+            announce_no_available_moves(player_token_type)
+            game.pass_turn()
+            continue
         user_input = get_user_input(tokens_to_move, coins_flip_result, points)
         if user_input is QUIT:
             break
@@ -33,6 +40,9 @@ def play():
         if game.got_extra_move(dest_cell):
             announce_extra_move(player_token_type)
         game.calculate_next_turn()
+
+def announce_no_available_moves(token_type):
+    print(STRINGS_DICTIONARY.no_moves.format(token_type))
 
 def announce_empty_move(coins_flip_result, token_type):
     formatted_flip_result = '-'.join(coins_flip_result)
@@ -66,7 +76,7 @@ def ask_play_again():
     if not user_input in [YES, NO]:
         return ask_play_again()
 
-    return user_input
+    return user_input == YES
 
 def show_board(game):
     print(game.get_board_image())
@@ -140,6 +150,8 @@ def init_strings_dictionary():
     Play again? y/n: '''
     STRINGS_DICTIONARY.zero_points = '''
     Flips: {}. {} got 0 points...'''
+    STRINGS_DICTIONARY.no_moves = '''
+    No available moves...'''
 
 class StringsDictionary:
     pass
