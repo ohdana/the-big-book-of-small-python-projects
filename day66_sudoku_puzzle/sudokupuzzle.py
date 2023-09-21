@@ -2,7 +2,7 @@ import time, re
 from sudokugrid import SudokuGrid
 
 RESET, NEW, UNDO, ORIGINAL, QUIT = 'RESET', 'NEW', 'UNDO', 'ORIGINAL', 'QUIT'
-MOVE_REGEX = '`^[ABCDEFGHI][123456789] [123456789]$'
+MOVE_REGEX = '^[ABCDEFGHI][123456789] [123456789]$'
 YES, NO = 'Y', 'N'
 
 def main():
@@ -20,22 +20,30 @@ def play():
 def start_new_game():
     grid = SudokuGrid()
     while not grid.is_solved():
+        grid.show_canvas()
+        if grid.is_full():
+            grid_full()
         user_input = get_user_input()
         if user_input == QUIT:
             break
         elif user_input == RESET:
             grid.reset()
-            show_canvas(grid)
         elif user_input == NEW:
             grid = SudokuGrid()
-            show_canvas(grid)
         elif user_input == ORIGINAL:
             show_original(grid)
         elif user_input == UNDO:
             grid.undo()
         else:
             make_move(user_input, grid)
-            show_canvas(grid)
+    grid.show_canvas()
+    grid_solved()
+
+def grid_full():
+    print(STRINGS_DICTIONARY.grid_full)
+
+def grid_solved():
+    print(STRINGS_DICTIONARY.grid_solved)
 
 def get_user_input():
     print(STRINGS_DICTIONARY.user_input)
@@ -55,11 +63,14 @@ def is_valid_user_input(user_input):
     return False
 
 def make_move(move, grid):
-    grid.make_move(move)
+    cell_id, cell_new_value = parse_move(move)
+    print(cell_id, cell_new_value)
+    grid.make_move(cell_id, cell_new_value)
 
-def show_canvas(grid):
-    canvas = grid.get_canvas()
-    print(canvas)
+def parse_move(move):
+    parsed_move = move.split(' ')
+
+    return parsed_move[0], parsed_move[1]
 
 def do_play_again():
     user_input = input(STRINGS_DICTIONARY.play_again).upper()
@@ -101,7 +112,12 @@ def init_strings_dictionary():
     Play again? y/n: '''
     STRINGS_DICTIONARY.press_enter = '''
     Press Enter to begin...'''
-
+    STRINGS_DICTIONARY.grid_full = '''
+    Ooops.
+    The grid is full but it's not solved (yet!).
+    Seems like there's a mistake somewhere...'''
+    STRINGS_DICTIONARY.grid_solved = '''
+    Congratulations! You solved the puzzle!'''
 
 class StringsDictionary:
     pass
