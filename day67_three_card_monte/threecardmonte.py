@@ -23,6 +23,7 @@ def start_new_game(game_engine):
     shuffle_log = game_engine.shuffle()
     show_shuffle_log(shuffle_log)
     user_answer = ask_where_is_queen()
+    show_cards(game_engine)
     if is_winning(game_engine, user_answer):
         user_won()
     else:
