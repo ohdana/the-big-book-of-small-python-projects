@@ -2,6 +2,7 @@ from gameengine import GameEngine
 
 LEFT, MIDDLE, RIGHT = 'left', 'middle', 'right'
 CARD_INDEX_MAP = { LEFT: 0, MIDDLE: 1, RIGHT: 2 }
+CARD_POSITION_MAP = { 0: LEFT, 1: MIDDLE, 2: RIGHT }
 YES, NO = 'y', 'n'
 
 def main():
@@ -23,8 +24,9 @@ def start_new_game(game_engine):
     shuffle_log = game_engine.shuffle()
     show_shuffle_log(shuffle_log)
     user_answer = ask_where_is_queen()
+    is_winning_answer = game_engine.is_winning_answer(CARD_INDEX_MAP[user_answer])
     show_cards(game_engine)
-    if is_winning(game_engine, user_answer):
+    if is_winning_answer:
         user_won()
     else:
         user_lost()
@@ -32,7 +34,7 @@ def start_new_game(game_engine):
 def show_shuffle_log(shuffle_log):
     for entry in shuffle_log:
         index_1, index_2 = entry
-        position_1, position_2 = get_card_position(index_1), get_card_position(index_2)
+        position_1, position_2 = CARD_POSITION_MAP[index_1], CARD_POSITION_MAP[index_2]
         print(STRINGS_DICTIONARY.swapping.format(position_1, position_2))
 
 def get_card_position(card_index):
@@ -44,26 +46,10 @@ def user_won():
 def user_lost():
     print(STRINGS_DICTIONARY.you_lost)
 
-def is_winning(game_engine, user_answer):
-    queen_index = game_engine.get_queen_index()
-    user_chosen_card_index = CARD_INDEX_MAP[user_answer]
-    return user_chosen_card_index == queen_index
-
 def show_cards(game_engine):
-    cards_image = get_cards_image(game_engine)
+    cards_image = game_engine.get_cards_image()
     print(STRINGS_DICTIONARY.cards)
     print(cards_image)
-
-def get_cards_image(game_engine):
-    cards = game_engine.get_cards()
-    card_images = [card.get_image() for card in cards]
-    card_images_lines = [image.split('\n') for image in card_images]
-    card_height = game_engine.get_card_height()
-    lines = []
-    for i in range(card_height):
-        lines.append(' '.join([image[i] for image in card_images_lines]))
-
-    return '\n'.join(lines)
 
 def ask_where_is_queen():
     print(STRINGS_DICTIONARY.where_is_queen)
