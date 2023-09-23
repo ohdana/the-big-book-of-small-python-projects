@@ -6,6 +6,7 @@ HORIZONTAL_LINES = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9']]
 VERTICAL_LINES = [['1', '4', '7'], ['2', '5', '8'], ['3', '6', '9']]
 DIAGONAL_LINES = [['1', '5', '9'], ['3', '5', '7']]
 LINES = HORIZONTAL_LINES + VERTICAL_LINES + DIAGONAL_LINES
+MOVES = None
 
 def main():
     init()
@@ -19,66 +20,72 @@ def play():
         start_new_game()
         play_again = do_play_again()
 
+def reset_moves_log():
+    global MOVES
+    MOVES = {}
+
 def start_new_game():
+    reset_moves_log()
     turn = 0
-    moves_log = {}
-    show_canvas(moves_log)
-    while not check_if_board_full(moves_log):
+    show_canvas()
+    while not check_if_board_full():
         player = PLAYERS[turn]
-        make_move(moves_log, player)
-        show_canvas(moves_log)
-        is_winner = check_if_is_winner(moves_log, player)
-        if is_winner:
-            win(player)
-            break
-        turn = (turn + 1) % len(PLAYERS)
-    tie()
+        make_move(player)
+        show_canvas()
+        if is_winner(player):
+            announce_win(player)
+            return
+        turn = callculate_turn(turn)
+    announce_tie()
 
-def get_formatting_params(moves_log):
-    return [get_cell_content(moves_log, cell) for cell in CELLS]
+def callculate_turn(curr_turn):
+    return (curr_turn + 1) % len(PLAYERS)
 
-def get_cell_content(moves_log, cell):
-    if cell in moves_log:
-        return moves_log[cell]
+def make_move(player):
+    user_input = get_user_input(player)
+    MOVES[user_input] = player
 
-    return ' '
+def check_if_board_full():
+    return len(MOVES) == len(CELLS)
 
-def show_canvas(moves_log):
-    formatting_params = get_formatting_params(moves_log)
-    print(STRINGS_DICTIONARY.canvas.format(*formatting_params))
-
-def make_move(moves_log, player):
-    user_input = get_user_input(moves_log, player)
-    moves_log[user_input] = player
-
-def check_if_board_full(moves_log):
-    return len(moves_log) == len(CELLS)
-
-def check_if_is_winner(moves_log, player):
+def is_winner(player):
     for line in LINES:
-        is_winning_line = all([get_cell_content(moves_log, cell) == player for cell in line])
+        is_winning_line = all([get_cell_content(cell) == player for cell in line])
         if is_winning_line:
             return True
     return False
 
-def win(player):
+def announce_win(player):
     print(STRINGS_DICTIONARY.win.format(player))
 
-def tie():
+def announce_tie():
     print(STRINGS_DICTIONARY.tie)
 
-def get_user_input(moves_log, player):
+def show_canvas():
+    formatting_params = get_formatting_params()
+    print(STRINGS_DICTIONARY.canvas.format(*formatting_params))
+
+def get_formatting_params():
+    return [get_cell_content(cell) for cell in CELLS]
+
+def get_cell_content(cell):
+    if cell in MOVES:
+        return MOVES[cell]
+
+    return ' '
+
+def get_user_input(player):
     print(STRINGS_DICTIONARY.move.format(player))
     user_input = input(STRINGS_DICTIONARY.input)
-    while not is_valid_user_input(moves_log, user_input):
-        return get_user_input(moves_log, player)
+    while not is_valid_user_input(user_input):
+        return get_user_input(player)
     return user_input
 
-def is_valid_user_input(moves_log, user_input):
+def is_valid_user_input(user_input):
     if not user_input in CELLS:
         return False
 
-    return user_input not in moves_log
+    return user_input not in MOVES
 
 def do_play_again():
     user_input = input(STRINGS_DICTIONARY.play_again).lower()
