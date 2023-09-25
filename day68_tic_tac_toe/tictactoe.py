@@ -35,10 +35,10 @@ def start_new_game():
         if is_winner(player):
             announce_win(player)
             return
-        turn = callculate_turn(turn)
+        turn = calculate_turn(turn)
     announce_tie()
 
-def callculate_turn(curr_turn):
+def calculate_turn(curr_turn):
     return (curr_turn + 1) % len(PLAYERS)
 
 def make_move(player):
