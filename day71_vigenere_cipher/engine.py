@@ -1,5 +1,6 @@
-ENCRYPT, DECRYPT = 'e', 'd'
-ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ENCRYPT, DECRYPT = "e", "d"
+ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 
 class Engine:
     def __init__(self):
@@ -12,7 +13,7 @@ class Engine:
         return self.translate(DECRYPT, message, key)
 
     def translate(self, mode, message, key):
-        result = ''
+        result = ""
         key = key.upper()
         key_index = 0
         for char in message:
@@ -21,22 +22,25 @@ class Engine:
                 result += char
                 continue
 
-            result += self.translate_char(mode, char_index_in_abc, key[key_index], char.isupper())
+            result += self.translate_char(
+                mode, char_index_in_abc, key[key_index], char.isupper()
+            )
             key_index = (key_index + 1) % len(key)
 
         return result
 
     def translate_char(self, mode, char_index_in_abc, key_char, is_uppercase):
-        new_char_index_in_abc = 0
-        if mode == ENCRYPT:
-            new_char_index_in_abc = (ABC.find(key_char) + char_index_in_abc) % len(ABC)
-        else:
-            new_char_index_in_abc = (ABC.find(key_char) - char_index_in_abc) % len(ABC)
-        new_char = ABC[new_char_index_in_abc]
-        if is_uppercase:
-            return new_char.upper()
-        else:
-            return new_char.lower()
+        translate_char_function = (
+            self.encrypt_char if mode == ENCRYPT else self.decrypt_char
+        )
+        new_char = translate_char_function(char_index_in_abc, key_char)
+        return self.format_case(new_char, is_uppercase)
 
-e = Engine()
-print(e.translate('d', 'Bmds mt jx sht znre qcrgeh bnmivps.', 'pizza'))
+    def format_case(self, string, is_uppercase):
+        return string.upper() if is_uppercase else string.lower()
+
+    def encrypt_char(self, char_index_in_abc, key_char):
+        return ABC[(char_index_in_abc + ABC.find(key_char)) % len(ABC)]
+
+    def decrypt_char(self, char_index_in_abc, key_char):
+        return ABC[(char_index_in_abc - ABC.find(key_char)) % len(ABC)]
