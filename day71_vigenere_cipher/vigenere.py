@@ -8,7 +8,6 @@ def main():
     init()
     show_intro_message()
     play()
-    show_bye_message()
 
 
 def play():
@@ -18,6 +17,7 @@ def play():
             encrypt()
         else:
             decrypt()
+        print(STRINGS_DICTIONARY.separator)
 
 
 def get_user_request():
@@ -69,10 +69,6 @@ def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
 
 
-def show_bye_message():
-    print(STRINGS_DICTIONARY.bye_message)
-
-
 def init():
     init_strings_dictionary()
     init_engine()
@@ -113,6 +109,8 @@ def init_strings_dictionary():
     STRINGS_DICTIONARY.decrypted_message = """
     Decrypted message:
     {}"""
+    STRINGS_DICTIONARY.separator = """
+    ========================================"""
 
 
 class StringsDictionary:
