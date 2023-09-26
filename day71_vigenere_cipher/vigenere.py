@@ -1,7 +1,4 @@
-from engine import Engine
-
 ENCRYPT, DECRYPT = "e", "d"
-ENGINE = None
 
 
 def main():
@@ -71,12 +68,6 @@ def show_intro_message():
 
 def init():
     init_strings_dictionary()
-    init_engine()
-
-
-def init_engine():
-    global ENGINE
-    ENGINE = Engine()
 
 
 ##############################
