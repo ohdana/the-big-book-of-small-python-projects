@@ -48,8 +48,13 @@ def pour(buckets, bucket_from_number, bucket_to_number):
     bucket_from_capacity, bucket_from_water_level = bucket_from.get_stats()
     bucket_to_capacity, bucket_to_water_level = bucket_to.get_stats()
     bucket_to_available_capacity = bucket_to_capacity - bucket_to_water_level
-    bucket_from.remove(bucket_to_available_capacity)
-    bucket_to.add(bucket_to_available_capacity)
+    amount_to_pour = 0
+    if bucket_to_available_capacity > bucket_from_water_level:
+        amount_to_pour = bucket_from_water_level
+    else:
+        amount_to_pour = bucket_to_available_capacity
+    bucket_from.remove(amount_to_pour)
+    bucket_to.add(amount_to_pour)
 
 def get_bucket_numbers():
     print(STRINGS_DICTIONARY.select_bucket_from)
@@ -67,10 +72,8 @@ def get_bucket_number():
 
 def get_user_input(buckets):
     buckets_image = get_buckets_image(buckets)
-    print(buckets_image)
     print(STRINGS_DICTIONARY.options.format(buckets_image))
     user_input = input(STRINGS_DICTIONARY.input).lower()
-
     if user_input not in [FILL, EMPTY, POUR, QUIT]:
         return get_user_input(buckets)
 
