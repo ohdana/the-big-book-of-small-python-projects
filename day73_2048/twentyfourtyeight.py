@@ -2,6 +2,7 @@ from game import Game
 
 QUIT = 'q'
 YES, NO = 'y', 'n'
+W, A, S, D = 'w', 'a', 's', 'd'
 
 def main():
     init()
@@ -18,12 +19,23 @@ def play():
 def start_new_game():
     game = Game()
     game.show_board()
-    while not game.can_make_move():
+    while game.can_make_move():
         user_input = get_user_input()
         if user_input == QUIT:
             return
         game.make_move(user_input)
         game.show_board()
+    show_loss_message()
+
+def show_loss_message():
+    print(STRINGS_DICTIONARY.you_lost)
+
+def get_user_input():
+    print(STRINGS_DICTIONARY.enter_move)
+    user_input = input(STRINGS_DICTIONARY.input).lower()
+    if not user_input in [W, A, S, D, QUIT]:
+        return get_user_input()
+    return user_input
 
 def ask_play_again():
     user_input = input(STRINGS_DICTIONARY.play_again).lower()
@@ -33,6 +45,7 @@ def ask_play_again():
 
 def show_intro_message():
     print(STRINGS_DICTIONARY.intro_message)
+    input(STRINGS_DICTIONARY.press_enter)
 
 
 def show_bye_message():
@@ -67,6 +80,8 @@ def init_strings_dictionary():
     Press Enter to begin...'''
     STRINGS_DICTIONARY.enter_move = '''
     Enter move: (WASD or Q to quit)'''
+    STRINGS_DICTIONARY.bye_message = '''
+    Bye!'''
     STRINGS_DICTIONARY.input = '''
     > '''
     STRINGS_DICTIONARY.score = '''
@@ -75,6 +90,8 @@ def init_strings_dictionary():
     Congratulations! You reached 2048!'''
     STRINGS_DICTIONARY.you_lost = '''
     Game over. Thanks for playing!'''
+    STRINGS_DICTIONARY.play_again = '''
+    Play again? y/n: '''
 
 class StringsDictionary:
     pass

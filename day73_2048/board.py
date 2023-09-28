@@ -32,7 +32,8 @@ class Board:
         self.canvas = self.init_canvas()
 
     def is_full(self):
-        return all([self.is_full_row(row) for row in self.canvas])
+        cells = self.get_cells_coords_up_to_down_left_to_right()
+        return all([not self.is_empty(*cell) for cell in cells])
 
     def move(self, direction):
         cells_to_move = self.get_ordered_cells_to_move(direction)
@@ -62,25 +63,22 @@ class Board:
         cells = []
         for column_number in range(WIDTH):
             for row_number in range(HEIGHT):
-                cells.append((row_number, column_number))
+                cells.append((column_number, row_number))
         return cells
 
     def get_ordered_cells_to_move_down(self):
         cells = []
         for row_number in range(HEIGHT):
             for column_number in range(WIDTH):
-                cells.append((HEIGHT - row_number - 1, column_number))
+                cells.append((column_number, HEIGHT - row_number - 1))
         return cells
 
     def get_ordered_cells_to_move_right(self):
         cells = []
         for column_number in range(WIDTH):
             for row_number in range(HEIGHT):
-                cells.append((row_number, WIDTH - column_number - 1))
+                cells.append((WIDTH - column_number - 1, row_number))
         return cells
-
-    def is_full_row(self, row):
-        return all([not self.is_empty(cell) for cell in row])
 
     def is_empty(self, x, y):
         return self.get_cell(x, y) == EMPTY_CHAR
@@ -150,23 +148,26 @@ class Board:
         return [[EMPTY_CHAR] * WIDTH for i in range(HEIGHT)]
 
     def move_cell(self, x, y, direction):
+        #mark merged?
         neighbour_coords = self.get_neighbour_coords(x, y, direction)
         neighbour_x, neighbour_y = neighbour_coords
         neighbour = self.get_cell(neighbour_x, neighbour_y)
+        cell = self.get_cell(x, y)
         if self.is_empty(neighbour_x, neighbour_y):
             self.swap_cells((x, y), neighbour_coords)
             self.move_cell(neighbour_x, neighbour_y, direction)
+        elif neighbour == cell:
+            self.merge_cells((x, y), neighbour_coords)
 
     def get_canvas(self):
         labels = self.get_labels_for_canvas()
-        print(labels)
         return CANVAS.format(*labels)
 
     def get_cells_coords_up_to_down_left_to_right(self):
         cells = []
         for row_number in range(HEIGHT):
             for column_number in range(WIDTH):
-                cells.append((row_number, column_number))
+                cells.append((column_number, row_number))
         return cells
 
     def get_labels_for_canvas(self):
@@ -178,7 +179,3 @@ class Board:
         right_gap = ' ' * ((CANVAS_CELL_WIDTH - len(cell_value)) // 2)
         left_gap = ' ' * (CANVAS_CELL_WIDTH - len(right_gap) - len(cell_value))
         return '{}{}{}'.format(left_gap, cell_value, right_gap)
-
-    def show(self):
-        canvas = self.get_canvas()
-        print(canvas)
