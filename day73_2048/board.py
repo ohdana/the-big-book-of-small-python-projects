@@ -30,12 +30,18 @@ W, A, S, D = 'w', 'a', 's', 'd'
 class Board:
     def __init__(self):
         self.canvas = self.init_canvas()
+        self.moved_cells = []
+        self.merged_cells = []
 
     def is_full(self):
         cells = self.get_cells_coords_up_to_down_left_to_right()
         return all([not self.is_empty(*cell) for cell in cells])
 
+    def has_been_moved_any_cell(self):
+        return (len(self.moved_cells) + len(self.merged_cells)) > 0
+
     def move(self, direction):
+        self.flush_move_log()
         cells_to_move = self.get_ordered_cells_to_move(direction)
         for cell in cells_to_move:
             x, y = cell
@@ -61,9 +67,10 @@ class Board:
 
     def get_ordered_cells_to_move_left(self):
         cells = []
-        for column_number in range(WIDTH):
-            for row_number in range(HEIGHT):
+        for row_number in range(HEIGHT):
+            for column_number in range(WIDTH):
                 cells.append((column_number, row_number))
+        print(cells)
         return cells
 
     def get_ordered_cells_to_move_down(self):
@@ -148,16 +155,35 @@ class Board:
         return [[EMPTY_CHAR] * WIDTH for i in range(HEIGHT)]
 
     def move_cell(self, x, y, direction):
-        #mark merged?
         neighbour_coords = self.get_neighbour_coords(x, y, direction)
         neighbour_x, neighbour_y = neighbour_coords
         neighbour = self.get_cell(neighbour_x, neighbour_y)
         cell = self.get_cell(x, y)
+        if self.is_empty(x, y):
+            return
         if self.is_empty(neighbour_x, neighbour_y):
             self.swap_cells((x, y), neighbour_coords)
             self.move_cell(neighbour_x, neighbour_y, direction)
+            self.unmark_as_moved((x, y))
+            self.mark_as_moved(neighbour_coords)
         elif neighbour == cell:
-            self.merge_cells((x, y), neighbour_coords)
+            if neighbour_coords not in self.merged_cells:
+                self.merge_cells((x, y), neighbour_coords)
+                self.mark_as_merged(neighbour_coords)
+
+    def mark_as_merged(self, cell):
+        self.merged_cells.append(cell)
+
+    def unmark_as_moved(self, cell):
+        if cell in self.moved_cells:
+            self.moved_cells.remove(cell)
+
+    def mark_as_moved(self, cell):
+        self.moved_cells.append(cell)
+
+    def flush_move_log(self):
+        self.merged_cells = []
+        self.moved_cells = []
 
     def get_canvas(self):
         labels = self.get_labels_for_canvas()

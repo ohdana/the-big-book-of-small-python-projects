@@ -9,7 +9,8 @@ class Game:
 
     def make_move(self, direction):
         self.board.move(direction)
-        self.board.add_new_cell()
+        if self.board.has_been_moved_any_cell():
+            self.board.add_new_cell()
 
     def can_make_move(self):
         return not self.board.is_full()
