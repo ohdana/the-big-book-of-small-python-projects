@@ -64,9 +64,9 @@ class GameEngine:
         return random.randint(0, len(self.cards) - 1)
 
     def init_cards(self):
-        jack = self.init_card('J', '♦')
-        queen = self.init_card('Q', '♥')
-        eight = self.init_card('8', '♣')
+        jack = self.init_card(JACK, DIAMONDS)
+        queen = self.init_card(QUEEN, HEARTS)
+        eight = self.init_card(EIGHT, CLUBS)
 
         return [jack, queen, eight]
 
